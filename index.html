@@ -49,10 +49,14 @@ cursor:pointer
 
 .btn:hover{filter:brightness(.97)}
 
-.btn.primary,
-.btn.active{
+.btn.primary,.btn.active{
 background:#0864c7;
 color:white
+}
+
+.btn.danger{
+border-color:#a61f2d;
+color:#a61f2d
 }
 
 .present{margin-left:auto}
@@ -119,15 +123,32 @@ background:white
 .person{
 display:flex;
 justify-content:space-between;
+align-items:center;
+gap:12px;
 padding:10px 13px;
 border-bottom:1px solid #e7eef4
 }
+
+.person:last-child{border-bottom:0}
 
 .remove{
 border:0;
 background:none;
 color:#a61f2d;
 cursor:pointer
+}
+
+.eventActive{background:#e6f6fd}
+
+.eventActions{
+display:flex;
+flex-wrap:wrap;
+gap:7px
+}
+
+.eventActions .btn{
+padding:7px 10px;
+font-size:12px
 }
 
 .wheelArea{
@@ -143,7 +164,7 @@ position:relative;
 width:min(620px,80vw);
 aspect-ratio:1;
 transform:scale(1);
-transform-origin:center center;
+transform-origin:top center;
 transition:transform .25s ease
 }
 
@@ -184,12 +205,22 @@ background:#003b70e8
 .overlay.show{display:grid}
 
 .winner{
+position:relative;
+z-index:102;
 min-width:320px;
+max-width:90vw;
 padding:40px 60px;
 border-radius:20px;
 background:white;
 text-align:center;
+box-shadow:0 25px 80px #0006;
 animation:winnerPop .4s ease
+}
+
+.winner.celebrate{
+animation:
+winnerPop .4s ease,
+winnerPulse 1s ease .45s 2
 }
 
 @keyframes winnerPop{
@@ -197,11 +228,46 @@ from{transform:scale(.7);opacity:0}
 to{transform:scale(1);opacity:1}
 }
 
+@keyframes winnerPulse{
+0%,100%{transform:scale(1)}
+50%{transform:scale(1.06)}
+}
+
 .winnerName{
 margin:15px 0 25px;
 color:#0067b9;
 font-size:42px;
 font-weight:900
+}
+
+.celebrationLayer{
+position:fixed;
+inset:0;
+z-index:101;
+overflow:hidden;
+pointer-events:none
+}
+
+.confettiPiece{
+position:absolute;
+top:-12vh;
+width:12px;
+height:22px;
+border-radius:3px;
+opacity:.95;
+animation:confettiFall linear forwards
+}
+
+@keyframes confettiFall{
+0%{
+transform:translate3d(0,-10vh,0) rotate(0deg);
+opacity:1
+}
+80%{opacity:1}
+100%{
+transform:translate3d(var(--drift),115vh,0) rotate(var(--rotation));
+opacity:0
+}
 }
 
 .themes{
@@ -270,10 +336,14 @@ color:#477ba7;
 font-size:13px
 }
 
-.hideUI header,
-.hideUI .hidePresent{
-display:none
+.rangeLabels{
+display:flex;
+justify-content:space-between;
+color:#477ba7;
+font-size:12px
 }
+
+.hideUI header,.hideUI .hidePresent{display:none}
 
 .hideUI .wrap{
 max-width:none;
@@ -295,10 +365,12 @@ header{flex-wrap:wrap}
 .present{margin-left:0}
 .themes,.audioGrid{grid-template-columns:1fr 1fr}
 .wheelBox{width:90vw}
+.person{align-items:flex-start}
 }
 
 @media(max-width:520px){
 .themes,.audioGrid{grid-template-columns:1fr}
+.winner{padding:35px 25px}
 }
 </style>
 </head>
@@ -306,7 +378,6 @@ header{flex-wrap:wrap}
 <body>
 
 <header>
-
 <div class="brand">
 ◎ AT&amp;T Spin To Win
 <span>PRIZE WHEEL</span>
@@ -317,10 +388,7 @@ header{flex-wrap:wrap}
 <button id="setupTab" class="btn">⚙ Setup</button>
 </div>
 
-<button id="present" class="btn present">
-⛶ Present
-</button>
-
+<button id="present" class="btn present">⛶ Present</button>
 </header>
 
 <main class="wrap">
@@ -328,71 +396,58 @@ header{flex-wrap:wrap}
 <section id="wheelPage" class="page active">
 
 <div id="empty" class="empty">
-
-<div style="font-size:48px">
-🏆
-</div>
-
+<div style="font-size:48px">🏆</div>
 <h1>Ready to Spin To Win</h1>
-
-<p>
-Add participants in Setup to load your wheel.
-</p>
-
-<button id="openSetup" class="btn primary">
-⚙ Open Setup
-</button>
-
+<p>Add participants in Setup to load your wheel.</p>
+<button id="openSetup" class="btn primary">⚙ Open Setup</button>
 </div>
 
 <div id="wheelArea" class="wheelArea" hidden>
-
 <div>
 
 <div id="wheelBox" class="wheelBox">
-
-<canvas
-id="wheel"
-width="700"
-height="700">
-</canvas>
-
+<canvas id="wheel" width="700" height="700"></canvas>
 <div class="pointer"></div>
-
 </div>
 
-<button
-id="spin"
-class="btn primary spin hidePresent">
+<button id="spin" class="btn primary spin hidePresent">
 SPIN THE WHEEL
 </button>
 
-<p
-id="counter"
-class="hidePresent"
-style="color:white;font-weight:bold">
-</p>
+<p id="counter" class="hidePresent" style="color:white;font-weight:bold"></p>
 
 </div>
-
 </div>
 
 </section>
-
 
 <section id="setupPage" class="page">
 
 <div class="card">
 
-<h2>🏷 Event Label</h2>
+<h2>🏷 Events</h2>
+
+<p class="notice">
+Save events separately with their own participant lists for future use.
+</p>
 
 <input
 id="event"
 class="field"
 placeholder="Example: Q4 Kickoff or Employee Raffle">
 
+<div class="row">
+<button id="saveEvent" class="btn primary">Save Event</button>
+<button id="newEvent" class="btn">New Event</button>
 </div>
 
+<div id="eventStatus" class="status" style="margin-top:12px">
+No saved event is currently loaded.
+</div>
+
+<div id="savedEvents" class="list"></div>
+
+</div>
 
 <div class="card">
 
@@ -402,18 +457,8 @@ placeholder="Example: Q4 Kickoff or Employee Raffle">
 </h2>
 
 <div class="row">
-
-<input
-id="name"
-class="field"
-placeholder="Participant name">
-
-<button
-id="add"
-class="btn primary">
-+ Add
-</button>
-
+<input id="name" class="field" placeholder="Participant name">
+<button id="add" class="btn primary">+ Add</button>
 </div>
 
 <h3>Bulk Add</h3>
@@ -421,73 +466,33 @@ class="btn primary">
 <textarea
 id="bulk"
 class="field"
-placeholder="Jane Doe&#10;John Smith&#10;Rosa Garcia">
-</textarea>
+placeholder="Jane Doe&#10;John Smith&#10;Rosa Garcia"></textarea>
 
 <div class="row">
-
-<button
-id="addBulk"
-class="btn">
-Add Names
-</button>
-
-<button
-id="clearBulk"
-class="btn">
-Clear Box
-</button>
-
+<button id="addBulk" class="btn">Add Names</button>
+<button id="clearBulk" class="btn">Clear Box</button>
 </div>
 
 <h3>CSV</h3>
 
-<input
-id="csv"
-type="file"
-accept=".csv,text/csv"
-hidden>
+<input id="csv" type="file" accept=".csv,text/csv" hidden>
 
 <div class="row">
-
-<button
-id="import"
-class="btn">
-Import CSV
-</button>
-
-<button
-id="export"
-class="btn">
-Export CSV
-</button>
-
-<button
-id="clear"
-class="btn">
-Clear All
-</button>
-
+<button id="import" class="btn">Import CSV</button>
+<button id="export" class="btn">Export CSV</button>
+<button id="clear" class="btn">Clear All</button>
 </div>
 
-<div
-id="people"
-class="list">
-</div>
+<div id="people" class="list"></div>
 
 </div>
-
 
 <div class="card">
 
 <h2>🎨 Customization</h2>
 
 <h3>Center Logo</h3>
-
-<input
-id="logo"
-type="file"
-accept="image/*">
+<input id="logo" type="file" accept="image/*">
 
 <h3>
 Logo Size:
@@ -502,7 +507,6 @@ max="60"
 value="28"
 style="width:100%">
 
-
 <h3>
 Wheel Size:
 <span id="wheelSizeLabel">100%</span>
@@ -516,24 +520,18 @@ max="120"
 value="100"
 style="width:100%">
 
-<div style="display:flex;justify-content:space-between;color:#477ba7;font-size:12px">
+<div class="rangeLabels">
 <span>70%</span>
 <span>100%</span>
 <span>120%</span>
 </div>
 
 <p class="notice">
-Increase the wheel size for large displays, projectors, or full-screen presentation mode.
+Increasing the wheel size also adds space under the wheel so the Spin button remains visible.
 </p>
 
-
 <h3>Background</h3>
-
-<div
-id="themes"
-class="themes">
-</div>
-
+<div id="themes" class="themes"></div>
 
 <h3>
 Spin Duration:
@@ -551,60 +549,31 @@ style="width:100%">
 <div class="controls">
 
 <label class="toggle">
-
 Remove winner after spin
-
-<input
-id="removeWinner"
-type="checkbox"
-checked>
-
+<input id="removeWinner" type="checkbox" checked>
 </label>
 
-
 <label class="toggle">
-
 Show participant counter
-
-<input
-id="showCounter"
-type="checkbox"
-checked>
-
+<input id="showCounter" type="checkbox" checked>
 </label>
-
 
 <label class="toggle">
-
 Enable keyboard shortcuts
-
-<input
-id="hotkeys"
-type="checkbox"
-checked>
-
+<input id="hotkeys" type="checkbox" checked>
 </label>
 
 </div>
-
 </div>
-
 
 <div class="card">
 
 <h2>🔊 Sound Effects</h2>
 
 <label class="toggle">
-
 Enable sound effects
-
-<input
-id="soundEnabled"
-type="checkbox"
-checked>
-
+<input id="soundEnabled" type="checkbox" checked>
 </label>
-
 
 <h3>
 Master Volume:
@@ -619,11 +588,9 @@ max="100"
 value="70"
 style="width:100%">
 
-
 <p class="notice">
-Built-in wheel ticks play during the spin, followed by a generated celebration when the winner appears. You can replace either effect with your own browser-compatible audio file.
+Built-in wheel ticks play during the spin, followed by a generated celebration when the winner appears. You can replace either effect with your own audio.
 </p>
-
 
 <div class="audioGrid">
 
@@ -636,36 +603,17 @@ id="spinAudioFile"
 type="file"
 accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg">
 
-<span
-id="spinAudioStatus"
-class="status">
+<span id="spinAudioStatus" class="status">
 Using built-in wheel ticks
 </span>
 
 <div class="row">
-
-<button
-id="testSpinAudio"
-class="btn">
-▶ Test
-</button>
-
-<button
-id="stopAudio"
-class="btn">
-■ Stop
-</button>
-
-<button
-id="clearSpinAudio"
-class="btn">
-Use Default
-</button>
-
+<button id="testSpinAudio" class="btn">▶ Test</button>
+<button id="stopAudio" class="btn">■ Stop</button>
+<button id="clearSpinAudio" class="btn">Use Default</button>
 </div>
 
 </div>
-
 
 <div class="audioBox">
 
@@ -676,39 +624,24 @@ id="winnerAudioFile"
 type="file"
 accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg">
 
-<span
-id="winnerAudioStatus"
-class="status">
+<span id="winnerAudioStatus" class="status">
 Using built-in celebration
 </span>
 
 <div class="row">
-
-<button
-id="testWinnerAudio"
-class="btn">
-▶ Test
-</button>
-
-<button
-id="clearWinnerAudio"
-class="btn">
-Use Default
-</button>
-
+<button id="testWinnerAudio" class="btn">▶ Test</button>
+<button id="clearWinnerAudio" class="btn">Use Default</button>
 </div>
 
 </div>
 
 </div>
-
 
 <p class="notice">
-Custom audio must be selected again after refreshing the page because browsers do not permanently retain access to locally uploaded files.
+Custom audio must be selected again after refreshing because browsers do not permanently retain access to local files.
 </p>
 
 </div>
-
 
 <div class="card">
 
@@ -726,34 +659,17 @@ Custom audio must be selected again after refreshing the page because browsers d
 
 </div>
 
-
 <div class="card">
 
 <h2>🏆 Winner History</h2>
 
 <div class="row">
-
-<button
-id="exportWinners"
-class="btn">
-Export Winners
-</button>
-
-<button
-id="clearWinners"
-class="btn">
-Clear History
-</button>
-
+<button id="exportWinners" class="btn">Export Winners</button>
+<button id="clearWinners" class="btn">Clear History</button>
 </div>
 
-<div
-id="history"
-class="list"
-style="padding:12px">
-
+<div id="history" class="list" style="padding:12px">
 No winners yet.
-
 </div>
 
 </div>
@@ -762,86 +678,47 @@ No winners yet.
 
 </main>
 
+<div id="celebrationLayer" class="celebrationLayer"></div>
 
-<div
-id="overlay"
-class="overlay">
+<div id="overlay" class="overlay">
 
 <div class="winner">
 
-<h2>
-🏆 WINNER
-</h2>
+<h2>🏆 WINNER</h2>
 
-<div
-id="winnerName"
-class="winnerName">
-</div>
+<div id="winnerName" class="winnerName"></div>
 
-<button
-id="continue"
-class="btn primary">
-Continue
-</button>
+<button id="continue" class="btn primary">Continue</button>
 
 </div>
 
 </div>
-
 
 <script>
+const $=id=>document.getElementById(id);
 
-const $=
-id=>document.getElementById(id);
-
-
-let people=
-JSON.parse(
-localStorage.getItem("stwPeople")||
-"[]"
-);
-
-
-let winners=
-JSON.parse(
-localStorage.getItem("stwWinners")||
-"[]"
-);
-
-
+let people=JSON.parse(localStorage.getItem("stwPeople")||"[]");
+let winners=JSON.parse(localStorage.getItem("stwWinners")||"[]");
+let savedEvents=JSON.parse(localStorage.getItem("stwSavedEvents")||"[]");
+let activeEventId=localStorage.getItem("stwActiveEventId")||"";
 let removed=[];
-
 let rotation=0;
-
 let logo=null;
-
 
 let theme=
 localStorage.getItem("stwTheme")||
 "linear-gradient(135deg,#004b87,#00a8e0)";
 
-
 let wheelSize=
-Number(
-localStorage.getItem("stwWheelSize")||
-100
-);
-
+Number(localStorage.getItem("stwWheelSize")||100);
 
 let audioContext=null;
-
 let spinTickTimer=null;
-
 let spinStopTimer=null;
-
 let spinCustomAudio=null;
-
 let winnerCustomAudio=null;
-
 let spinObjectUrl=null;
-
 let winnerObjectUrl=null;
-
 
 const colors=[
 "#00a8e0",
@@ -854,1002 +731,472 @@ const colors=[
 "#1577cf"
 ];
 
-
 const themeData=[
-
-[
-"AT&T",
-"linear-gradient(135deg,#004b87,#00a8e0)"
-],
-
-[
-"Navy",
-"linear-gradient(135deg,#003b70,#0057b8)"
-],
-
-[
-"Sky",
-"linear-gradient(135deg,#00a8e0,#7dddf4)"
-],
-
-[
-"White",
-"linear-gradient(135deg,#fff,#dff4ff)"
-],
-
-[
-"Christmas",
-"linear-gradient(135deg,#086b35,#c5162e)"
-],
-
-[
-"Halloween",
-"linear-gradient(135deg,#300057,#ff6a00)"
-],
-
-[
-"Thanksgiving",
-"linear-gradient(135deg,#8d3100,#e99a38)"
-],
-
-[
-"Summer",
-"linear-gradient(135deg,#ffd85e,#ff663e)"
-]
-
+["AT&T","linear-gradient(135deg,#004b87,#00a8e0)"],
+["Navy","linear-gradient(135deg,#003b70,#0057b8)"],
+["Sky","linear-gradient(135deg,#00a8e0,#7dddf4)"],
+["White","linear-gradient(135deg,#fff,#dff4ff)"],
+["Christmas","linear-gradient(135deg,#086b35,#c5162e)"],
+["Halloween","linear-gradient(135deg,#300057,#ff6a00)"],
+["Thanksgiving","linear-gradient(135deg,#8d3100,#e99a38)"],
+["Summer","linear-gradient(135deg,#ffd85e,#ff663e)"]
 ];
 
-
-document.body.style.background=
-theme;
-
-
-/* SAVE */
+document.body.style.background=theme;
 
 function save(){
-
-localStorage.setItem(
-"stwPeople",
-JSON.stringify(people)
-);
-
-
-localStorage.setItem(
-"stwWinners",
-JSON.stringify(winners)
-);
-
-
-localStorage.setItem(
-"stwTheme",
-theme
-);
-
-
-localStorage.setItem(
-"stwWheelSize",
-wheelSize
-);
-
+localStorage.setItem("stwPeople",JSON.stringify(people));
+localStorage.setItem("stwWinners",JSON.stringify(winners));
+localStorage.setItem("stwSavedEvents",JSON.stringify(savedEvents));
+localStorage.setItem("stwActiveEventId",activeEventId);
+localStorage.setItem("stwTheme",theme);
+localStorage.setItem("stwWheelSize",wheelSize);
 }
-
-
-/* WHEEL SIZE */
 
 function applyWheelSize(){
+wheelSize=Number($("wheelSize").value);
+$("wheelSizeLabel").textContent=wheelSize+"%";
 
-wheelSize=
-Number(
-$("wheelSize").value
-);
+const wheelBox=$("wheelBox");
+const scale=wheelSize/100;
 
+wheelBox.style.transform=`scale(${scale})`;
 
-$("wheelSizeLabel").textContent=
-wheelSize+
-"%";
+const baseHeight=wheelBox.offsetWidth;
+const additionalHeight=Math.max(0,baseHeight*(scale-1));
 
-
-$("wheelBox").style.transform=
-`scale(${wheelSize/100})`;
-
+wheelBox.style.marginBottom=additionalHeight+"px";
 
 save();
-
 }
-
-
-/* NAVIGATION */
 
 function nav(page){
-
-$("wheelPage")
-.classList.toggle(
-"active",
-page==="wheel"
-);
-
-
-$("setupPage")
-.classList.toggle(
-"active",
-page==="setup"
-);
-
-
-$("wheelTab")
-.classList.toggle(
-"active",
-page==="wheel"
-);
-
-
-$("setupTab")
-.classList.toggle(
-"active",
-page==="setup"
-);
-
-
+$("wheelPage").classList.toggle("active",page==="wheel");
+$("setupPage").classList.toggle("active",page==="setup");
+$("wheelTab").classList.toggle("active",page==="wheel");
+$("setupTab").classList.toggle("active",page==="setup");
 render();
-
 }
 
-
-$("wheelTab").onclick=
-()=>nav("wheel");
-
-
-$("setupTab").onclick=
-()=>nav("setup");
-
-
-$("openSetup").onclick=
-()=>nav("setup");
-
-
-/* SAFE TEXT */
+$("wheelTab").onclick=()=>nav("wheel");
+$("setupTab").onclick=()=>nav("setup");
+$("openSetup").onclick=()=>nav("setup");
 
 function safe(text){
-
-const div=
-document.createElement("div");
-
-
-div.textContent=
-String(text);
-
-
+const div=document.createElement("div");
+div.textContent=String(text);
 return div.innerHTML;
-
 }
-
-
-/* RENDER */
 
 function render(){
-
 save();
 
+$("count").textContent=`(${people.length} on wheel)`;
 
-$("count").textContent=
-`(${people.length} on wheel)`;
-
-
-if(people.length){
-
-$("people").innerHTML=
-
-people.map(
-(name,index)=>`
-
+$("people").innerHTML=people.length
+?people.map((name,index)=>`
 <div class="person">
-
-<span>
-${safe(name)}
-</span>
-
-<button
-class="remove"
-data-index="${index}">
-
-Remove
-
-</button>
-
+<span>${safe(name)}</span>
+<button class="remove" data-index="${index}">Remove</button>
 </div>
+`).join("")
+:`<p style="padding:15px;text-align:center">No participants yet.</p>`;
 
-`
-).join("");
-
-}
-
-else{
-
-$("people").innerHTML=`
-
-<p style="padding:15px;text-align:center">
-
-No participants yet.
-
-</p>
-
-`;
-
-}
-
-
-$("empty").hidden=
-people.length>0;
-
-
-$("wheelArea").hidden=
-people.length===0;
-
+$("empty").hidden=people.length>0;
+$("wheelArea").hidden=people.length===0;
 
 $("counter").textContent=
-
 $("showCounter").checked
+?`${people.length} names remaining`
+:"";
 
-?
-
-`${people.length} names remaining`
-
-:
-
-"";
-
-
-if(winners.length){
-
-$("history").innerHTML=
-
-winners.map(
-(winner,index)=>`
-
+$("history").innerHTML=winners.length
+?winners.map((winner,index)=>`
 <div style="padding:8px;border-bottom:1px solid #eee">
-
-<b>
-${index+1}. ${safe(winner.name)}
-</b>
-
+<b>${index+1}. ${safe(winner.name)}</b>
 <br>
-
-<small>
-${new Date(winner.time).toLocaleString()}
-</small>
-
+<small>${new Date(winner.time).toLocaleString()}</small>
 </div>
-
-`
-).join("");
-
-}
-
-else{
-
-$("history").textContent=
-"No winners yet.";
-
-}
-
+`).join("")
+:"No winners yet.";
 
 draw();
-
 }
 
+function createEventId(){
+return Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+}
 
-/* ADD PEOPLE */
+function renderEvents(){
+if(!savedEvents.length){
+$("savedEvents").innerHTML=`
+<p style="padding:15px;text-align:center">
+No events saved yet.
+</p>
+`;
+return;
+}
+
+$("savedEvents").innerHTML=savedEvents.map(event=>{
+const active=event.id===activeEventId;
+
+return `
+<div class="person ${active?"eventActive":""}">
+<div>
+<strong>${safe(event.name)}</strong>
+<br>
+<small class="notice">
+${event.people.length} participants
+</small>
+</div>
+
+<div class="eventActions">
+<button class="btn loadEvent" data-event-id="${event.id}">
+Load
+</button>
+<button class="btn danger deleteEvent" data-event-id="${event.id}">
+Delete
+</button>
+</div>
+</div>
+`;
+}).join("");
+}
+
+function saveCurrentEvent(){
+const eventName=$("event").value.trim();
+
+if(!eventName){
+$("eventStatus").textContent="Enter an event name before saving.";
+$("event").focus();
+return;
+}
+
+const existingIndex=savedEvents.findIndex(
+event=>event.id===activeEventId
+);
+
+const eventData={
+id:activeEventId||createEventId(),
+name:eventName,
+people:[...people],
+updated:Date.now()
+};
+
+if(existingIndex>=0){
+savedEvents[existingIndex]=eventData;
+}else{
+savedEvents.unshift(eventData);
+}
+
+activeEventId=eventData.id;
+
+$("eventStatus").textContent=
+`Saved "${eventName}" with ${people.length} participants.`;
+
+save();
+renderEvents();
+}
+
+function loadEvent(eventId){
+const selected=savedEvents.find(event=>event.id===eventId);
+
+if(!selected)return;
+
+activeEventId=selected.id;
+$("event").value=selected.name;
+people=[...selected.people];
+winners=[];
+removed=[];
+
+$("eventStatus").textContent=
+`Loaded "${selected.name}" with ${selected.people.length} participants.`;
+
+save();
+render();
+renderEvents();
+}
+
+function startNewEvent(){
+activeEventId="";
+$("event").value="";
+people=[];
+winners=[];
+removed=[];
+
+$("eventStatus").textContent=
+"New event started. Enter a name and add participants.";
+
+save();
+render();
+renderEvents();
+$("event").focus();
+}
+
+function deleteSavedEvent(eventId){
+const selected=savedEvents.find(event=>event.id===eventId);
+
+if(!selected)return;
+
+const shouldDelete=window.confirm(
+`Delete the saved event "${selected.name}"?`
+);
+
+if(!shouldDelete)return;
+
+savedEvents=savedEvents.filter(event=>event.id!==eventId);
+
+if(activeEventId===eventId){
+activeEventId="";
+$("eventStatus").textContent="The active saved event was deleted.";
+}
+
+save();
+renderEvents();
+}
+
+$("saveEvent").onclick=saveCurrentEvent;
+$("newEvent").onclick=startNewEvent;
+
+$("savedEvents").onclick=event=>{
+const button=event.target.closest("button");
+
+if(!button)return;
+
+const eventId=button.dataset.eventId;
+
+if(button.classList.contains("loadEvent")){
+loadEvent(eventId);
+}
+
+if(button.classList.contains("deleteEvent")){
+deleteSavedEvent(eventId);
+}
+};
 
 function addNames(list){
-
 list
-.map(
-name=>
-String(name).trim()
-)
-.filter(
-Boolean
-)
-.forEach(
-name=>{
-
-const duplicate=
-
-people.some(
-existing=>
-
-existing.toLowerCase()===
-
-name.toLowerCase()
-
+.map(name=>String(name).trim())
+.filter(Boolean)
+.forEach(name=>{
+const duplicate=people.some(
+existing=>existing.toLowerCase()===name.toLowerCase()
 );
 
-
-if(!duplicate){
-
-people.push(name);
-
-}
-
-}
-);
-
+if(!duplicate)people.push(name);
+});
 
 render();
-
 }
 
-
-$("add").onclick=
-()=>{
-
-addNames(
-[
-$("name").value
-]
-);
-
-
-$("name").value=
-"";
-
-
+$("add").onclick=()=>{
+addNames([$("name").value]);
+$("name").value="";
 $("name").focus();
-
 };
 
-
-$("name").onkeydown=
-event=>{
-
-if(
-event.key===
-"Enter"
-){
-
+$("name").onkeydown=event=>{
+if(event.key==="Enter"){
 event.preventDefault();
-
 $("add").click();
-
 }
-
 };
 
-
-$("addBulk").onclick=
-()=>{
-
-addNames(
-
-$("bulk")
-.value
-.split(/\r?\n/)
-
-);
-
+$("addBulk").onclick=()=>{
+addNames($("bulk").value.split(/\r?\n/));
 };
 
-
-$("clearBulk").onclick=
-()=>{
-
-$("bulk").value=
-"";
-
+$("clearBulk").onclick=()=>{
+$("bulk").value="";
 };
 
-
-$("clear").onclick=
-()=>{
-
+$("clear").onclick=()=>{
 people=[];
-
 render();
-
 };
 
-
-$("people").onclick=
-event=>{
-
-if(
-event.target
-.classList
-.contains(
-"remove"
-)
-){
-
-const index=
-
-Number(
-event.target.dataset.index
-);
-
-
-people.splice(
-index,
-1
-);
-
-
+$("people").onclick=event=>{
+if(event.target.classList.contains("remove")){
+const index=Number(event.target.dataset.index);
+people.splice(index,1);
 render();
-
 }
-
 };
 
-
-/* CSV */
-
-$("import").onclick=
-()=>{
-
+$("import").onclick=()=>{
 $("csv").click();
-
 };
 
+$("csv").onchange=event=>{
+const file=event.target.files[0];
 
-$("csv").onchange=
-event=>{
+if(!file)return;
 
-const file=
-event.target.files[0];
+const reader=new FileReader();
 
-
-if(!file){
-
-return;
-
-}
-
-
-const reader=
-new FileReader();
-
-
-reader.onload=
-loadEvent=>{
-
-const imported=
-
-String(
-loadEvent.target.result
-)
-
+reader.onload=loadEvent=>{
+const imported=String(loadEvent.target.result)
 .split(/\r?\n/)
-
-.map(
-(line,index)=>{
-
-let value=
-
-line
+.map((line,index)=>{
+let value=line
 .split(",")[0]
 .replace(/^"|"$/g,"")
 .trim();
 
-
 return (
-
 index===0 &&
-
-value.toLowerCase()===
-"name"
-
+value.toLowerCase()==="name"
 )
+?""
+:value;
+});
 
-?
-
-""
-
-:
-
-value;
-
-}
-);
-
-
-addNames(
-imported
-);
-
-
-event.target.value=
-"";
-
+addNames(imported);
+event.target.value="";
 };
 
-
-reader.readAsText(
-file
-);
-
+reader.readAsText(file);
 };
 
+function download(filename,text){
+const blob=new Blob([text],{type:"text/csv"});
+const url=URL.createObjectURL(blob);
+const link=document.createElement("a");
 
-/* DOWNLOADS */
+link.href=url;
+link.download=filename;
 
-function download(
-filename,
-text
-){
-
-const blob=
-
-new Blob(
-[text],
-{
-type:"text/csv"
-}
-);
-
-
-const url=
-
-URL.createObjectURL(
-blob
-);
-
-
-const link=
-
-document.createElement(
-"a"
-);
-
-
-link.href=
-url;
-
-
-link.download=
-filename;
-
-
-document.body
-.appendChild(
-link
-);
-
-
+document.body.appendChild(link);
 link.click();
-
-
 link.remove();
 
-
-setTimeout(
-()=>URL.revokeObjectURL(url),
-100
-);
-
+setTimeout(()=>URL.revokeObjectURL(url),100);
 }
 
-
-$("export").onclick=
-()=>{
-
+$("export").onclick=()=>{
 const csv=
-
 "Name\n"+
+people.map(name=>`"${name.replaceAll('"','""')}"`).join("\n");
 
-people.map(
-name=>
-
-`"${name.replaceAll('"','""')}"`
-
-).join("\n");
-
-
-download(
-"participants.csv",
-csv
-);
-
+download("participants.csv",csv);
 };
 
-
-$("exportWinners").onclick=
-()=>{
-
+$("exportWinners").onclick=()=>{
 const csv=
-
 "Name,Time\n"+
-
 winners.map(
-winner=>
-
-`"${winner.name.replaceAll('"','""')}","${new Date(winner.time).toISOString()}"`
-
+winner=>`"${winner.name.replaceAll('"','""')}","${new Date(winner.time).toISOString()}"`
 ).join("\n");
 
-
-download(
-"winners.csv",
-csv
-);
-
+download("winners.csv",csv);
 };
 
-
-$("clearWinners").onclick=
-()=>{
-
+$("clearWinners").onclick=()=>{
 winners=[];
-
 render();
-
 };
-
-
-/* DRAW WHEEL */
 
 function draw(){
+const canvas=$("wheel");
+const context=canvas.getContext("2d");
+const total=people.length;
+const center=canvas.width/2;
+const radius=center-12;
 
-const canvas=
-$("wheel");
+context.clearRect(0,0,canvas.width,canvas.height);
 
+if(total===0)return;
 
-const context=
-canvas.getContext(
-"2d"
-);
-
-
-const total=
-people.length;
-
-
-const center=
-canvas.width/2;
-
-
-const radius=
-center-12;
-
-
-context.clearRect(
-0,
-0,
-canvas.width,
-canvas.height
-);
-
-
-if(
-total===0
-){
-
-return;
-
-}
-
-
-for(
-let index=0;
-index<total;
-index++
-){
-
-const start=
-
-index*
-2*
-Math.PI/
-total
-
--
-
-Math.PI/2;
-
-
-const end=
-
-(index+1)*
-2*
-Math.PI/
-total
-
--
-
-Math.PI/2;
-
+for(let index=0;index<total;index++){
+const start=index*2*Math.PI/total-Math.PI/2;
+const end=(index+1)*2*Math.PI/total-Math.PI/2;
 
 context.beginPath();
-
-
-context.moveTo(
-center,
-center
-);
-
-
-context.arc(
-center,
-center,
-radius,
-start,
-end
-);
-
-
+context.moveTo(center,center);
+context.arc(center,center,radius,start,end);
 context.closePath();
 
-
-context.fillStyle=
-
-colors[
-index%
-colors.length
-];
-
-
+context.fillStyle=colors[index%colors.length];
 context.fill();
 
-
-context.strokeStyle=
-"white";
-
-
-context.lineWidth=
-3;
-
-
+context.strokeStyle="white";
+context.lineWidth=3;
 context.stroke();
 
-
 context.save();
+context.translate(center,center);
+context.rotate((start+end)/2);
 
+context.fillStyle="white";
+context.font=`bold ${Math.max(13,Math.min(26,250/total))}px Arial`;
+context.textAlign="right";
+context.textBaseline="middle";
 
-context.translate(
-center,
-center
-);
-
-
-context.rotate(
-(start+end)/2
-);
-
-
-context.fillStyle=
-"white";
-
-
-context.font=
-
-`bold ${
-Math.max(
-13,
-Math.min(
-26,
-250/total
-)
-)
-}px Arial`;
-
-
-context.textAlign=
-"right";
-
-
-context.textBaseline=
-"middle";
-
-
-context.fillText(
-
-people[index]
-.slice(
-0,
-25
-),
-
-radius-25,
-
-0
-
-);
-
-
+context.fillText(people[index].slice(0,25),radius-25,0);
 context.restore();
-
 }
 
-
-/* CENTER CIRCLE */
-
 context.beginPath();
-
-
-context.arc(
-center,
-center,
-radius*.19,
-0,
-Math.PI*2
-);
-
-
-context.fillStyle=
-"white";
-
-
+context.arc(center,center,radius*.19,0,Math.PI*2);
+context.fillStyle="white";
 context.fill();
 
-
-/* LOGO */
-
 if(logo){
-
-const size=
-
-radius*
-.38*
-(
-Number(
-$("logoSize").value
-)/
-28
-);
-
+const size=radius*.38*(Number($("logoSize").value)/28);
 
 context.save();
-
-
 context.beginPath();
-
-
-context.arc(
-center,
-center,
-radius*.18,
-0,
-Math.PI*2
-);
-
-
+context.arc(center,center,radius*.18,0,Math.PI*2);
 context.clip();
-
-
-context.drawImage(
-logo,
-center-size/2,
-center-size/2,
-size,
-size
-);
-
-
+context.drawImage(logo,center-size/2,center-size/2,size,size);
 context.restore();
-
+}else{
+context.fillStyle="#00a8e0";
+context.font="bold 50px Arial";
+context.textAlign="center";
+context.textBaseline="middle";
+context.fillText("◎",center,center);
 }
-
-else{
-
-context.fillStyle=
-"#00a8e0";
-
-
-context.font=
-"bold 50px Arial";
-
-
-context.textAlign=
-"center";
-
-
-context.textBaseline=
-"middle";
-
-
-context.fillText(
-"◎",
-center,
-center
-);
-
 }
-
-}
-
-
-/* RANDOM */
 
 function random(){
-
-if(
-window.crypto &&
-window.crypto.getRandomValues
-){
-
-const numbers=
-new Uint32Array(1);
-
-
-window.crypto.getRandomValues(
-numbers
-);
-
-
-return numbers[0]/
-4294967296;
-
+if(window.crypto&&window.crypto.getRandomValues){
+const numbers=new Uint32Array(1);
+window.crypto.getRandomValues(numbers);
+return numbers[0]/4294967296;
 }
-
 
 return Math.random();
-
 }
-
-
-/* AUDIO */
 
 function audioOn(){
-
 return (
-
 $("soundEnabled").checked &&
-
-Number(
-$("volume").value
-)>0
-
+Number($("volume").value)>0
 );
-
 }
-
 
 function currentVolume(){
-
-return Number(
-$("volume").value
-)/100;
-
+return Number($("volume").value)/100;
 }
-
 
 function getAudioContext(){
-
 if(!audioContext){
-
 const AudioContextClass=
-
 window.AudioContext||
-
 window.webkitAudioContext;
 
+if(!AudioContextClass)return null;
 
-if(!AudioContextClass){
-
-return null;
-
+audioContext=new AudioContextClass();
 }
 
-
-audioContext=
-
-new AudioContextClass();
-
-}
-
-
-if(
-audioContext.state===
-"suspended"
-){
-
+if(audioContext.state==="suspended"){
 audioContext.resume();
-
 }
-
 
 return audioContext;
-
 }
-
 
 function tone(
 frequency,
@@ -1858,1431 +1205,579 @@ gainAmount=.07,
 type="sine",
 delay=0
 ){
+if(!audioOn())return;
 
-if(!audioOn()){
+const context=getAudioContext();
 
-return;
+if(!context)return;
 
-}
+const oscillator=context.createOscillator();
+const gain=context.createGain();
+const start=context.currentTime+delay;
 
+oscillator.type=type;
+oscillator.frequency.setValueAtTime(frequency,start);
 
-const context=
-getAudioContext();
-
-
-if(!context){
-
-return;
-
-}
-
-
-const oscillator=
-context.createOscillator();
-
-
-const gain=
-context.createGain();
-
-
-const start=
-context.currentTime+
-delay;
-
-
-oscillator.type=
-type;
-
-
-oscillator.frequency
-.setValueAtTime(
-frequency,
+gain.gain.setValueAtTime(
+Math.max(.0001,gainAmount*currentVolume()),
 start
 );
 
-
-gain.gain
-.setValueAtTime(
-
-Math.max(
-.0001,
-gainAmount*
-currentVolume()
-),
-
-start
-
-);
-
-
-gain.gain
-.exponentialRampToValueAtTime(
+gain.gain.exponentialRampToValueAtTime(
 .0001,
 start+duration
 );
 
+oscillator.connect(gain);
+gain.connect(context.destination);
 
-oscillator.connect(
-gain
-);
-
-
-gain.connect(
-context.destination
-);
-
-
-oscillator.start(
-start
-);
-
-
-oscillator.stop(
-start+duration
-);
-
+oscillator.start(start);
+oscillator.stop(start+duration);
 }
-
 
 function stopSpinSound(){
-
 if(spinTickTimer){
-
-clearTimeout(
-spinTickTimer
-);
-
+clearTimeout(spinTickTimer);
 spinTickTimer=null;
-
 }
-
 
 if(spinStopTimer){
-
-clearTimeout(
-spinStopTimer
-);
-
+clearTimeout(spinStopTimer);
 spinStopTimer=null;
-
 }
-
 
 if(spinCustomAudio){
-
 spinCustomAudio.pause();
-
 spinCustomAudio.currentTime=0;
-
+}
 }
 
-}
-
-
-/* DEFAULT SPIN SOUND */
-
-function startDefaultSpin(
-seconds
-){
-
+function startDefaultSpin(seconds){
 stopSpinSound();
 
-
-if(!audioOn()){
-
-return;
-
-}
-
+if(!audioOn())return;
 
 let tickCount=0;
-
 let running=true;
 
-
 function tick(){
+if(!running||!audioOn())return;
 
-if(
-!running ||
-!audioOn()
-){
+const frequency=360+(tickCount%5)*35;
 
-return;
-
-}
-
-
-const frequency=
-
-360+
-
-(tickCount%5)*35;
-
-
-tone(
-frequency,
-.04,
-.06,
-"square"
-);
-
+tone(frequency,.04,.06,"square");
 
 tickCount++;
 
+const interval=Math.min(260,75+tickCount*5);
 
-const interval=
-
-Math.min(
-260,
-75+
-tickCount*5
-);
-
-
-spinTickTimer=
-
-setTimeout(
-tick,
-interval
-);
-
+spinTickTimer=setTimeout(tick,interval);
 }
-
 
 tick();
 
-
-spinStopTimer=
-
-setTimeout(
-()=>{
-
+spinStopTimer=setTimeout(()=>{
 running=false;
-
 stopSpinSound();
-
-},
-
-Math.max(
-100,
-seconds*1000-80
-)
-
-);
-
+},Math.max(100,seconds*1000-80));
 }
 
-
-/* CUSTOM OR DEFAULT SPIN SOUND */
-
-function playSpinSound(
-seconds
-){
-
-if(!audioOn()){
-
-return;
-
-}
-
+function playSpinSound(seconds){
+if(!audioOn())return;
 
 if(spinCustomAudio){
-
 stopSpinSound();
 
+spinCustomAudio.currentTime=0;
+spinCustomAudio.volume=currentVolume();
+spinCustomAudio.loop=true;
 
-spinCustomAudio.currentTime=
-0;
+spinCustomAudio.play().catch(error=>{
+console.log("Custom spin audio could not play:",error);
+});
 
-
-spinCustomAudio.volume=
-currentVolume();
-
-
-spinCustomAudio.loop=
-true;
-
-
-spinCustomAudio
-.play()
-.catch(
-error=>{
-
-console.log(
-"Custom spin audio could not play:",
-error
-);
-
-}
-);
-
-
-spinStopTimer=
-
-setTimeout(
+spinStopTimer=setTimeout(
 stopSpinSound,
-
-Math.max(
-100,
-seconds*1000-80
-)
-
+Math.max(100,seconds*1000-80)
 );
-
+}else{
+startDefaultSpin(seconds);
 }
-
-else{
-
-startDefaultSpin(
-seconds
-);
-
 }
-
-}
-
-
-/* DEFAULT WINNER SOUND */
 
 function defaultCheer(){
+if(!audioOn())return;
 
-if(!audioOn()){
+const context=getAudioContext();
 
-return;
+if(!context)return;
 
-}
+const duration=2.8;
 
-
-const context=
-getAudioContext();
-
-
-if(!context){
-
-return;
-
-}
-
-
-const duration=
-2.8;
-
-
-const buffer=
-
-context.createBuffer(
+const buffer=context.createBuffer(
 1,
-Math.floor(
-context.sampleRate*
-duration
-),
+Math.floor(context.sampleRate*duration),
 context.sampleRate
 );
 
+const data=buffer.getChannelData(0);
 
-const data=
-
-buffer.getChannelData(
-0
-);
-
-
-for(
-let index=0;
-index<data.length;
-index++
-){
-
-const time=
-
-index/
-context.sampleRate;
-
-
-const attack=
-
-Math.min(
-1,
-time*7
-);
-
-
-const decay=
-
-Math.max(
-0,
-1-time/duration
-);
-
-
-const modulation=
-
-.42+
-
-.25*
-
-Math.sin(
-time*40
-);
-
+for(let index=0;index<data.length;index++){
+const time=index/context.sampleRate;
+const attack=Math.min(1,time*7);
+const decay=Math.max(0,1-time/duration);
+const modulation=.42+.25*Math.sin(time*40);
 
 data[index]=
-
-(
-Math.random()*2-1
-)*
-
+(Math.random()*2-1)*
 attack*
-
 decay*
-
 modulation;
-
 }
 
+const source=context.createBufferSource();
+const filter=context.createBiquadFilter();
+const gain=context.createGain();
 
-const source=
+source.buffer=buffer;
 
-context.createBufferSource();
+filter.type="bandpass";
+filter.frequency.value=1200;
+filter.Q.value=.5;
 
+gain.gain.value=.38*currentVolume();
 
-const filter=
-
-context.createBiquadFilter();
-
-
-const gain=
-
-context.createGain();
-
-
-source.buffer=
-buffer;
-
-
-filter.type=
-"bandpass";
-
-
-filter.frequency.value=
-1200;
-
-
-filter.Q.value=
-.5;
-
-
-gain.gain.value=
-
-.38*
-currentVolume();
-
-
-source.connect(
-filter
-);
-
-
-filter.connect(
-gain
-);
-
-
-gain.connect(
-context.destination
-);
-
+source.connect(filter);
+filter.connect(gain);
+gain.connect(context.destination);
 
 source.start();
 
-
-[
-523,
-659,
-784,
-1047
-]
-.forEach(
-(frequency,index)=>{
-
-tone(
-frequency,
-.75,
-.06,
-"triangle",
-index*.09
-);
-
+[523,659,784,1047].forEach((frequency,index)=>{
+tone(frequency,.75,.06,"triangle",index*.09);
+});
 }
-);
-
-}
-
-
-/* WINNER SOUND */
 
 function playWinnerSound(){
-
-if(!audioOn()){
-
-return;
-
-}
-
+if(!audioOn())return;
 
 if(winnerCustomAudio){
-
 winnerCustomAudio.pause();
+winnerCustomAudio.currentTime=0;
+winnerCustomAudio.volume=currentVolume();
 
-
-winnerCustomAudio.currentTime=
-0;
-
-
-winnerCustomAudio.volume=
-currentVolume();
-
-
-winnerCustomAudio
-.play()
-.catch(
-error=>{
-
-console.log(
-"Custom winner audio could not play:",
-error
-);
-
-}
-);
-
-}
-
-else{
-
+winnerCustomAudio.play().catch(error=>{
+console.log("Custom winner audio could not play:",error);
+});
+}else{
 defaultCheer();
-
+}
 }
 
+function createCustomAudio(file,type){
+if(!file)return;
+
+if(type==="spin"&&spinObjectUrl){
+URL.revokeObjectURL(spinObjectUrl);
 }
 
-
-/* CUSTOM AUDIO */
-
-function createCustomAudio(
-file,
-type
-){
-
-if(!file){
-
-return;
-
+if(type==="winner"&&winnerObjectUrl){
+URL.revokeObjectURL(winnerObjectUrl);
 }
 
+const objectUrl=URL.createObjectURL(file);
+const audio=new Audio();
 
-if(
-type==="spin" &&
-spinObjectUrl
-){
-
-URL.revokeObjectURL(
-spinObjectUrl
-);
-
-}
-
-
-if(
-type==="winner" &&
-winnerObjectUrl
-){
-
-URL.revokeObjectURL(
-winnerObjectUrl
-);
-
-}
-
-
-const objectUrl=
-
-URL.createObjectURL(
-file
-);
-
-
-const audio=
-
-new Audio();
-
-
-audio.preload=
-"auto";
-
-
-audio.src=
-objectUrl;
-
-
-audio.volume=
-currentVolume();
-
+audio.preload="auto";
+audio.src=objectUrl;
+audio.volume=currentVolume();
 
 if(type==="spin"){
-
-spinObjectUrl=
-objectUrl;
-
-
-spinCustomAudio=
-audio;
-
-
-$("spinAudioStatus").textContent=
-
-`Custom: ${file.name}`;
-
+spinObjectUrl=objectUrl;
+spinCustomAudio=audio;
+$("spinAudioStatus").textContent=`Custom: ${file.name}`;
+}else{
+winnerObjectUrl=objectUrl;
+winnerCustomAudio=audio;
+$("winnerAudioStatus").textContent=`Custom: ${file.name}`;
 }
-
-else{
-
-winnerObjectUrl=
-objectUrl;
-
-
-winnerCustomAudio=
-audio;
-
-
-$("winnerAudioStatus").textContent=
-
-`Custom: ${file.name}`;
-
-}
-
 
 audio.load();
-
 }
 
-
-$("spinAudioFile").onchange=
-event=>{
-
-createCustomAudio(
-event.target.files[0],
-"spin"
-);
-
+$("spinAudioFile").onchange=event=>{
+createCustomAudio(event.target.files[0],"spin");
 };
 
-
-$("winnerAudioFile").onchange=
-event=>{
-
-createCustomAudio(
-event.target.files[0],
-"winner"
-);
-
+$("winnerAudioFile").onchange=event=>{
+createCustomAudio(event.target.files[0],"winner");
 };
 
-
-/* RESET SPIN AUDIO */
-
-$("clearSpinAudio").onclick=
-()=>{
-
+$("clearSpinAudio").onclick=()=>{
 stopSpinSound();
-
-
-spinCustomAudio=
-null;
-
+spinCustomAudio=null;
 
 if(spinObjectUrl){
-
-URL.revokeObjectURL(
-spinObjectUrl
-);
-
-
-spinObjectUrl=
-null;
-
+URL.revokeObjectURL(spinObjectUrl);
+spinObjectUrl=null;
 }
 
-
-$("spinAudioFile").value=
-"";
-
-
-$("spinAudioStatus").textContent=
-"Using built-in wheel ticks";
-
+$("spinAudioFile").value="";
+$("spinAudioStatus").textContent="Using built-in wheel ticks";
 };
 
-
-/* RESET WINNER AUDIO */
-
-$("clearWinnerAudio").onclick=
-()=>{
-
+$("clearWinnerAudio").onclick=()=>{
 if(winnerCustomAudio){
-
 winnerCustomAudio.pause();
-
-
-winnerCustomAudio.currentTime=
-0;
-
+winnerCustomAudio.currentTime=0;
 }
 
-
-winnerCustomAudio=
-null;
-
+winnerCustomAudio=null;
 
 if(winnerObjectUrl){
-
-URL.revokeObjectURL(
-winnerObjectUrl
-);
-
-
-winnerObjectUrl=
-null;
-
+URL.revokeObjectURL(winnerObjectUrl);
+winnerObjectUrl=null;
 }
 
-
-$("winnerAudioFile").value=
-"";
-
-
-$("winnerAudioStatus").textContent=
-"Using built-in celebration";
-
+$("winnerAudioFile").value="";
+$("winnerAudioStatus").textContent="Using built-in celebration";
 };
 
-
-/* TEST SOUNDS */
-
-$("testSpinAudio").onclick=
-()=>{
-
-playSpinSound(
-3
-);
-
+$("testSpinAudio").onclick=()=>{
+playSpinSound(3);
 };
 
-
-$("testWinnerAudio").onclick=
-()=>{
-
+$("testWinnerAudio").onclick=()=>{
 playWinnerSound();
-
 };
 
-
-$("stopAudio").onclick=
-()=>{
-
+$("stopAudio").onclick=()=>{
 stopSpinSound();
 
-
 if(winnerCustomAudio){
-
 winnerCustomAudio.pause();
-
-
-winnerCustomAudio.currentTime=
-0;
-
+winnerCustomAudio.currentTime=0;
 }
-
 };
 
-
-/* VOLUME */
-
-$("volume").oninput=
-event=>{
-
-$("volumeLabel").textContent=
-
-`${event.target.value}%`;
-
+$("volume").oninput=event=>{
+$("volumeLabel").textContent=`${event.target.value}%`;
 
 if(spinCustomAudio){
-
-spinCustomAudio.volume=
-currentVolume();
-
+spinCustomAudio.volume=currentVolume();
 }
-
 
 if(winnerCustomAudio){
-
-winnerCustomAudio.volume=
-currentVolume();
-
+winnerCustomAudio.volume=currentVolume();
 }
-
 };
 
-
-$("soundEnabled").onchange=
-()=>{
-
-if(
-!$("soundEnabled").checked
-){
-
+$("soundEnabled").onchange=()=>{
+if(!$("soundEnabled").checked){
 stopSpinSound();
 
-
 if(winnerCustomAudio){
-
 winnerCustomAudio.pause();
-
-
-winnerCustomAudio.currentTime=
-0;
-
+winnerCustomAudio.currentTime=0;
 }
-
 }
-
 };
 
+function launchCelebration(){
+const layer=$("celebrationLayer");
+layer.innerHTML="";
 
-/* SPIN */
+const celebrationColors=[
+"#00a8e0",
+"#0057b8",
+"#ffffff",
+"#ffd400",
+"#ff4f91",
+"#64d1e7",
+"#ff7a00",
+"#4bd37b"
+];
 
-function spin(){
+for(let index=0;index<110;index++){
+const piece=document.createElement("div");
 
-if(
+piece.className="confettiPiece";
+piece.style.left=Math.random()*100+"vw";
 
-people.length===0 ||
+piece.style.background=
+celebrationColors[
+Math.floor(Math.random()*celebrationColors.length)
+];
 
-$("wheel").dataset.spinning===
-"true"
+piece.style.animationDuration=
+(2.8+Math.random()*2.6)+"s";
 
-){
+piece.style.animationDelay=
+(Math.random()*.8)+"s";
 
-return;
-
-}
-
-
-const wheel=
-$("wheel");
-
-
-const winnerIndex=
-
-Math.floor(
-random()*
-people.length
+piece.style.setProperty(
+"--drift",
+(-160+Math.random()*320)+"px"
 );
 
+piece.style.setProperty(
+"--rotation",
+(360+Math.random()*1080)+"deg"
+);
 
-const sliceSize=
+piece.style.transform=`scale(${.6+Math.random()})`;
 
-360/
-people.length;
+layer.appendChild(piece);
+}
 
+const winnerCard=document.querySelector(".winner");
+
+winnerCard.classList.remove("celebrate");
+void winnerCard.offsetWidth;
+winnerCard.classList.add("celebrate");
+
+setTimeout(()=>{
+layer.innerHTML="";
+winnerCard.classList.remove("celebrate");
+},6000);
+}
+
+function stopCelebration(){
+$("celebrationLayer").innerHTML="";
+
+document
+.querySelector(".winner")
+.classList.remove("celebrate");
+}
+
+function spin(){
+if(
+people.length===0||
+$("wheel").dataset.spinning==="true"
+){
+return;
+}
+
+const wheel=$("wheel");
+
+const winnerIndex=
+Math.floor(random()*people.length);
+
+const sliceSize=360/people.length;
 
 const winnerCenter=
-
-winnerIndex*
-sliceSize+
-
+winnerIndex*sliceSize+
 sliceSize/2;
 
-
-const targetAngle=
-
-90-
-winnerCenter;
-
+const targetAngle=90-winnerCenter;
 
 const adjustment=
-
 (
 targetAngle-
-
 (rotation%360)+
-
 360
 )%360;
 
+rotation+=360*6+adjustment;
 
-rotation+=
+const seconds=Number($("duration").value);
 
-360*6+
+wheel.dataset.spinning="true";
+wheel.style.transitionDuration=`${seconds}s`;
+wheel.style.transform=`rotate(${rotation}deg)`;
 
-adjustment;
+playSpinSound(seconds);
 
-
-const seconds=
-
-Number(
-$("duration").value
-);
-
-
-wheel.dataset.spinning=
-"true";
-
-
-wheel.style.transitionDuration=
-
-`${seconds}s`;
-
-
-wheel.style.transform=
-
-`rotate(${rotation}deg)`;
-
-
-/* PLAY SPIN SOUND */
-
-playSpinSound(
-seconds
-);
-
-
-setTimeout(
-()=>{
-
+setTimeout(()=>{
 delete wheel.dataset.spinning;
-
 
 stopSpinSound();
 
+const winnerName=people[winnerIndex];
 
-const winnerName=
+winners.unshift({
+name:winnerName,
+time:Date.now()
+});
 
-people[
-winnerIndex
-];
+removed.push(winnerName);
 
+$("winnerName").textContent=winnerName;
+$("overlay").classList.add("show");
 
-winners.unshift(
-{
-
-name:
-winnerName,
-
-time:
-Date.now()
-
-}
-);
-
-
-removed.push(
-winnerName
-);
-
-
-$("winnerName").textContent=
-winnerName;
-
-
-$("overlay")
-.classList.add(
-"show"
-);
-
-
-/* WINNER SOUND */
-
+launchCelebration();
 playWinnerSound();
 
-
-if(
-$("removeWinner").checked
-){
-
-people.splice(
-winnerIndex,
-1
-);
-
+if($("removeWinner").checked){
+people.splice(winnerIndex,1);
 }
-
 
 render();
-
-},
-
-seconds*1000
-
-);
-
+},seconds*1000);
 }
 
+$("spin").onclick=spin;
 
-$("spin").onclick=
-spin;
-
-
-/* WINNER CONTINUE */
-
-$("continue").onclick=
-()=>{
-
-$("overlay")
-.classList.remove(
-"show"
-);
-
+$("continue").onclick=()=>{
+$("overlay").classList.remove("show");
+stopCelebration();
 };
 
+$("logo").onchange=event=>{
+const file=event.target.files[0];
 
-/* LOGO UPLOAD */
+if(!file)return;
 
-$("logo").onchange=
-event=>{
+const reader=new FileReader();
 
-const file=
-event.target.files[0];
-
-
-if(!file){
-
-return;
-
-}
-
-
-const reader=
-new FileReader();
-
-
-reader.onload=
-loadEvent=>{
-
-logo=
-new Image();
-
-
-logo.onload=
-draw;
-
-
-logo.src=
-loadEvent.target.result;
-
+reader.onload=loadEvent=>{
+logo=new Image();
+logo.onload=draw;
+logo.src=loadEvent.target.result;
 };
 
-
-reader.readAsDataURL(
-file
-);
-
+reader.readAsDataURL(file);
 };
 
-
-$("logoSize").oninput=
-event=>{
-
-$("logoLabel").textContent=
-
-`${event.target.value}%`;
-
-
+$("logoSize").oninput=event=>{
+$("logoLabel").textContent=`${event.target.value}%`;
 draw();
-
 };
 
-
-/* SPIN DURATION */
-
-$("duration").oninput=
-event=>{
-
-$("durationLabel").textContent=
-
-`${event.target.value} seconds`;
-
+$("duration").oninput=event=>{
+$("durationLabel").textContent=`${event.target.value} seconds`;
 };
 
+$("wheelSize").value=wheelSize;
+$("wheelSize").oninput=applyWheelSize;
 
-/* WHEEL SIZE */
-
-$("wheelSize").value=
-wheelSize;
-
-
-$("wheelSize").oninput=
-applyWheelSize;
-
+window.addEventListener("resize",applyWheelSize);
 
 applyWheelSize();
 
+$("showCounter").onchange=render;
 
-$("showCounter").onchange=
-render;
+themeData.forEach(([name,value])=>{
+const button=document.createElement("button");
 
-
-/* THEMES */
-
-themeData.forEach(
-([name,value])=>{
-
-const button=
-
-document.createElement(
-"button"
-);
-
-
-button.type=
-"button";
-
+button.type="button";
 
 button.className=
-
 "theme"+
+(value===theme?" sel":"");
 
-(
-value===theme
-?
-" sel"
-:
-""
-);
+button.textContent=name;
+button.style.background=value;
 
+button.onclick=()=>{
+theme=value;
+document.body.style.background=theme;
 
-button.textContent=
-name;
+document.querySelectorAll(".theme").forEach(item=>{
+item.classList.remove("sel");
+});
 
-
-button.style.background=
-value;
-
-
-button.onclick=
-()=>{
-
-theme=
-value;
-
-
-document.body.style.background=
-theme;
-
-
-document
-.querySelectorAll(
-".theme"
-)
-.forEach(
-item=>{
-
-item.classList.remove(
-"sel"
-);
-
-}
-);
-
-
-button.classList.add(
-"sel"
-);
-
+button.classList.add("sel");
 
 save();
-
 };
 
-
-$("themes")
-.appendChild(
-button
-);
-
-}
-);
-
-
-/* PRESENTATION */
+$("themes").appendChild(button);
+});
 
 async function present(){
+nav("wheel");
 
-nav(
-"wheel"
-);
-
-
-document.body
-.classList.add(
-"hideUI"
-);
-
+document.body.classList.add("hideUI");
 
 try{
-
-if(
-!document.fullscreenElement
-){
-
-await document
-.documentElement
-.requestFullscreen();
-
+if(!document.fullscreenElement){
+await document.documentElement.requestFullscreen();
+}
+}catch(error){
+console.log("Fullscreen unavailable:",error);
 }
 
+setTimeout(applyWheelSize,100);
 }
 
-catch(error){
+$("present").onclick=present;
 
-console.log(
-"Fullscreen unavailable:",
-error
-);
-
+document.addEventListener("fullscreenchange",()=>{
+if(!document.fullscreenElement){
+document.body.classList.remove("hideUI");
 }
 
-}
+setTimeout(applyWheelSize,100);
+});
 
+document.addEventListener("keydown",event=>{
+if(!$("hotkeys").checked)return;
 
-$("present").onclick=
-present;
+const activeElement=document.activeElement;
+const tagName=activeElement?activeElement.tagName:"";
 
+if(["INPUT","TEXTAREA","SELECT"].includes(tagName))return;
 
-document.addEventListener(
-"fullscreenchange",
-()=>{
+const key=event.key.toLowerCase();
 
-if(
-!document.fullscreenElement
-){
-
-document.body
-.classList.remove(
-"hideUI"
-);
-
-}
-
-}
-);
-
-
-/* HOTKEYS */
-
-document.addEventListener(
-"keydown",
-event=>{
-
-if(
-!$("hotkeys").checked
-){
-
-return;
-
-}
-
-
-const activeElement=
-document.activeElement;
-
-
-const tagName=
-
-activeElement
-?
-activeElement.tagName
-:
-"";
-
-
-if(
-
-[
-"INPUT",
-"TEXTAREA",
-"SELECT"
-].includes(
-tagName
-)
-
-){
-
-return;
-
-}
-
-
-const key=
-
-event.key
-.toLowerCase();
-
-
-/* SPACE */
-
-if(
-event.code===
-"Space"
-){
-
+if(event.code==="Space"){
 event.preventDefault();
-
 spin();
-
 }
 
-
-/* SETUP */
-
-if(key==="s"){
-
-nav(
-"setup"
-);
-
-}
-
-
-/* WHEEL */
-
-if(key==="w"){
-
-nav(
-"wheel"
-);
-
-}
-
-
-/* FULLSCREEN */
-
-if(key==="f"){
-
-present();
-
-}
-
-
-/* MUTE */
+if(key==="s")nav("setup");
+if(key==="w")nav("wheel");
+if(key==="f")present();
 
 if(key==="m"){
-
-$("soundEnabled").checked=
-
-!$("soundEnabled").checked;
-
-
-$("soundEnabled")
-.dispatchEvent(
-new Event(
-"change"
-)
-);
-
+$("soundEnabled").checked=!$("soundEnabled").checked;
+$("soundEnabled").dispatchEvent(new Event("change"));
 }
 
+if(key==="u"&&winners.length){
+const lastWinner=winners.shift();
 
-/* UNDO WINNER */
-
-if(
-key==="u" &&
-winners.length
-){
-
-const lastWinner=
-
-winners.shift();
-
-
-if(
-!people.includes(
-lastWinner.name
-)
-){
-
-people.push(
-lastWinner.name
-);
-
+if(!people.includes(lastWinner.name)){
+people.push(lastWinner.name);
 }
-
 
 render();
-
 }
 
-
-/* RESTORE WINNERS */
-
-if(
-key==="r" &&
-removed.length
-){
-
-removed.forEach(
-name=>{
-
-if(
-!people.includes(
-name
-)
-){
-
-people.push(
-name
-);
-
+if(key==="r"&&removed.length){
+removed.forEach(name=>{
+if(!people.includes(name)){
+people.push(name);
 }
-
-}
-);
-
+});
 
 removed=[];
-
-
 render();
-
 }
-
-
-/* ESCAPE */
 
 if(key==="escape"){
-
-$("overlay")
-.classList.remove(
-"show"
-);
-
-
-document.body
-.classList.remove(
-"hideUI"
-);
-
-
+$("overlay").classList.remove("show");
+document.body.classList.remove("hideUI");
 stopSpinSound();
-
+stopCelebration();
 }
-
-}
-);
-
-
-/* INITIALIZE */
+});
 
 render();
+renderEvents();
 
+if(activeEventId){
+const activeEvent=savedEvents.find(
+event=>event.id===activeEventId
+);
+
+if(activeEvent){
+$("event").value=activeEvent.name;
+$("eventStatus").textContent=
+`Loaded saved event: ${activeEvent.name}`;
+}
+}
 </script>
 
 </body>
