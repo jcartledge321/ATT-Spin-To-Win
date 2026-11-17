@@ -8,12 +8,18 @@
 <style>
 *{box-sizing:border-box}
 
-body{
+html,body{
 margin:0;
+min-height:100%;
+touch-action:manipulation
+}
+
+body{
 min-height:100vh;
 font-family:Arial,Helvetica,sans-serif;
 color:#003b70;
-background:linear-gradient(135deg,#004b87,#00a8e0)
+background:linear-gradient(135deg,#004b87,#00a8e0);
+-webkit-tap-highlight-color:transparent
 }
 
 button,input,textarea{font:inherit}
@@ -169,6 +175,7 @@ transition:transform .25s ease
 }
 
 canvas{
+display:block;
 width:100%;
 height:100%;
 transition:transform 7s cubic-bezier(.12,.75,.08,1);
@@ -218,9 +225,7 @@ animation:winnerPop .4s ease
 }
 
 .winner.celebrate{
-animation:
-winnerPop .4s ease,
-winnerPulse 1s ease .45s 2
+animation:winnerPop .4s ease,winnerPulse 1s ease .45s 2
 }
 
 @keyframes winnerPop{
@@ -353,7 +358,10 @@ padding:0
 
 .hideUI .wheelArea{
 min-height:100vh;
-overflow:hidden
+overflow:hidden;
+cursor:pointer;
+user-select:none;
+-webkit-user-select:none
 }
 
 .hideUI .wheelBox{
@@ -657,6 +665,10 @@ Custom audio must be selected again after refreshing because browsers do not per
 <b>R</b> Restore winners
 </p>
 
+<p class="notice">
+On a mobile device, tap anywhere on the screen while in Presentation mode to spin.
+</p>
+
 </div>
 
 <div class="card">
@@ -704,6 +716,7 @@ let activeEventId=localStorage.getItem("stwActiveEventId")||"";
 let removed=[];
 let rotation=0;
 let logo=null;
+let lastTouchSpin=0;
 
 let theme=
 localStorage.getItem("stwTheme")||
@@ -1762,6 +1775,40 @@ document.body.classList.remove("hideUI");
 stopSpinSound();
 stopCelebration();
 }
+});
+
+/* MOBILE PRESENTATION TAP TO SPIN */
+
+document.addEventListener("pointerup",event=>{
+if(!document.body.classList.contains("hideUI")){
+return;
+}
+
+if($("overlay").classList.contains("show")){
+return;
+}
+
+if(
+event.target.closest(
+"button,input,textarea,select,a,label"
+)
+){
+return;
+}
+
+if(event.pointerType==="mouse"){
+return;
+}
+
+const now=Date.now();
+
+if(now-lastTouchSpin<500){
+return;
+}
+
+lastTouchSpin=now;
+
+spin();
 });
 
 render();
