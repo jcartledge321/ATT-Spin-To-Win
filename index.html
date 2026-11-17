@@ -1,1 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<title>AT&T Spin To Win</title>
+
+<style>
+:root {
+  --att-blue:#0057b8;
+  --att-light:#00a8e0;
+  --att-dark:#003b70;
+  --white:#ffffff;
+}
+
+* {
+  box-sizing:border-box;
+}
+
+html,body {
+  margin:0;
+  min-height:100%;
+}
+
+body {
+  font-family:Arial,Helvetica,sans-serif;
+  color:var(--att-dark);
+  background:linear-gradient(135deg,#004b87,#00a8e0);
+  min-height:100vh;
+}
+
+/* HEADER */
+
+header {
+  background:rgba(255,255,255,.94);
+  padding:14px 22px;
+  display:flex;
+  align-items:center;
+  gap:22px;
+  border-bottom:1px solid #bde1f4;
+  position:sticky;
+  top:0;
+  z-index:20;
+}
+
+.brand {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  font-weight:bold;
+}
+
+.brand-icon {
+  width:42px;
+  height:42px;
+  background:#00a8e0;
+  color:white;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  font-size:24px;
+}
+
+.brand small {
+  display:block;
+  color:#1689cd;
+  margin-top:2px;
+}
+
+nav {
+  display
