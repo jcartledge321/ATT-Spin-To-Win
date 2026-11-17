@@ -4,131 +4,698 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>AT&T Spin To Win</title>
+
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(135deg,#004b87,#00a8e0);color:#003b70;min-height:100vh}button,input,textarea{font:inherit}header{background:#f7fbff;padding:12px 20px;display:flex;align-items:center;gap:20px;border-bottom:1px solid #b9def4}.brand{font-weight:bold;font-size:18px}.brand span{display:block;color:#1689cd;font-size:11px}.nav{display:flex;gap:8px}.btn{border:1px solid #0875c9;background:white;color:#004b87;border-radius:8px;padding:9px 14px;font-weight:bold;cursor:pointer}.btn.primary,.btn.active{background:#0864c7;color:white}.present{margin-left:auto}.wrap{max-width:980px;margin:30px auto;padding:0 18px 50px}.page{display:none}.page.active{display:block}.card{background:#f8fbfe;border-radius:15px;padding:22px;margin-bottom:20px;box-shadow:0 8px 25px #003b7020}.empty{max-width:520px;margin:70px auto;text-align:center;background:white;padding:40px;border-radius:18px}.field{width:100%;padding:11px;border:1px solid #8bcdf0;border-radius:8px;margin-bottom:10px}textarea.field{min-height:100px}.row{display:flex;gap:10px;align-items:center}.row .field{margin:0;flex:1}.list{margin-top:15px;border:1px solid #d4e8f5;border-radius:10px;overflow:hidden;background:white}.person{padding:10px 13px;border-bottom:1px solid #e7eef4;display:flex;justify-content:space-between}.remove{border:0;background:none;color:#a61f2d;cursor:pointer}.wheelArea{text-align:center;min-height:650px;display:grid;place-items:center}.wheelBox{position:relative;width:min(620px,80vw);aspect-ratio:1}canvas{width:100%;height:100%;transition:transform 7s cubic-bezier(.12,.75,.08,1);filter:drop-shadow(0 15px 25px #003b7066)}.pointer{position:absolute;right:-15px;top:50%;transform:translateY(-50%);width:0;height:0;border-top:20px solid transparent;border-bottom:20px solid transparent;border-left:38px solid white}.spin{font-size:20px;padding:14px 30px;margin-top:20px}.overlay{position:fixed;inset:0;background:#003b70e8;display:none;place-items:center;z-index:100}.overlay.show{display:grid}.winner{background:white;border-radius:20px;padding:40px 60px;text-align:center}.winnerName{font-size:42px;font-weight:900;color:#0067b9;margin:15px 0 25px}.themes{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.theme{height:60px;border:2px solid white;border-radius:8px;color:white;font-weight:bold;text-shadow:0 1px 3px black;cursor:pointer}.theme.sel{outline:3px solid #00a8e0}.controls{margin-top:20px}.toggle{display:flex;justify-content:space-between;padding:12px;border:1px solid #d4e8f5;border-radius:9px;margin:8px 0;background:white}.toggle input{width:20px}.hideUI header,.hideUI .hidePresent{display:none}.hideUI .wrap{margin:0;max-width:none;padding:0}.hideUI .wheelArea{min-height:100vh}@media(max-width:700px){header{flex-wrap:wrap}.present{margin-left:0}.themes{grid-template-columns:1fr 1fr}.row{flex-wrap:wrap}.wheelBox{width:90vw}}
+*{box-sizing:border-box}
+
+body{
+margin:0;
+font-family:Arial,sans-serif;
+background:linear-gradient(135deg,#004b87,#00a8e0);
+color:#003b70;
+min-height:100vh
+}
+
+button,input,textarea{font:inherit}
+
+header{
+background:#f7fbff;
+padding:12px 20px;
+display:flex;
+align-items:center;
+gap:20px;
+border-bottom:1px solid #b9def4
+}
+
+.brand{font-weight:bold;font-size:18px}
+
+.brand span{
+display:block;
+color:#1689cd;
+font-size:11px
+}
+
+.nav{display:flex;gap:8px}
+
+.btn{
+border:1px solid #0875c9;
+background:white;
+color:#004b87;
+border-radius:8px;
+padding:9px 14px;
+font-weight:bold;
+cursor:pointer
+}
+
+.btn.primary,.btn.active{
+background:#0864c7;
+color:white
+}
+
+.present{margin-left:auto}
+
+.wrap{
+max-width:980px;
+margin:30px auto;
+padding:0 18px 50px
+}
+
+.page{display:none}
+.page.active{display:block}
+
+.card{
+background:#f8fbfe;
+border-radius:15px;
+padding:22px;
+margin-bottom:20px;
+box-shadow:0 8px 25px #003b7020
+}
+
+.empty{
+max-width:520px;
+margin:70px auto;
+text-align:center;
+background:white;
+padding:40px;
+border-radius:18px
+}
+
+.field{
+width:100%;
+padding:11px;
+border:1px solid #8bcdf0;
+border-radius:8px;
+margin-bottom:10px
+}
+
+textarea.field{min-height:100px}
+
+.row{
+display:flex;
+gap:10px;
+align-items:center;
+flex-wrap:wrap
+}
+
+.row .field{
+margin:0;
+flex:1
+}
+
+.list{
+margin-top:15px;
+border:1px solid #d4e8f5;
+border-radius:10px;
+overflow:hidden;
+background:white
+}
+
+.person{
+padding:10px 13px;
+border-bottom:1px solid #e7eef4;
+display:flex;
+justify-content:space-between
+}
+
+.remove{
+border:0;
+background:none;
+color:#a61f2d;
+cursor:pointer
+}
+
+.wheelArea{
+text-align:center;
+min-height:650px;
+display:grid;
+place-items:center
+}
+
+.wheelBox{
+position:relative;
+width:min(620px,80vw);
+aspect-ratio:1
+}
+
+canvas{
+width:100%;
+height:100%;
+transition:transform 7s cubic-bezier(.12,.75,.08,1);
+filter:drop-shadow(0 15px 25px #003b7066)
+}
+
+.pointer{
+position:absolute;
+right:-15px;
+top:50%;
+transform:translateY(-50%);
+width:0;
+height:0;
+border-top:20px solid transparent;
+border-bottom:20px solid transparent;
+border-left:38px solid white
+}
+
+.spin{
+font-size:20px;
+padding:14px 30px;
+margin-top:20px
+}
+
+.overlay{
+position:fixed;
+inset:0;
+background:#003b70e8;
+display:none;
+place-items:center;
+z-index:100
+}
+
+.overlay.show{display:grid}
+
+.winner{
+background:white;
+border-radius:20px;
+padding:40px 60px;
+text-align:center
+}
+
+.winnerName{
+font-size:42px;
+font-weight:900;
+color:#0067b9;
+margin:15px 0 25px
+}
+
+.themes{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:8px
+}
+
+.theme{
+height:60px;
+border:2px solid white;
+border-radius:8px;
+color:white;
+font-weight:bold;
+text-shadow:0 1px 3px black;
+cursor:pointer
+}
+
+.theme.sel{outline:3px solid #00a8e0}
+
+.controls{margin-top:20px}
+
+.toggle{
+display:flex;
+justify-content:space-between;
+padding:12px;
+border:1px solid #d4e8f5;
+border-radius:9px;
+margin:8px 0;
+background:white
+}
+
+.toggle input{width:20px}
+
+.audioGrid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:14px
+}
+
+.audioBox{
+border:1px solid #cfe5f3;
+background:white;
+border-radius:11px;
+padding:14px
+}
+
+.audioBox input[type=file]{
+width:100%;
+margin:6px 0 10px
+}
+
+.status{
+font-size:12px;
+color:#477ba7;
+display:block;
+margin-bottom:8px
+}
+
+.hideUI header,
+.hideUI .hidePresent{
+display:none
+}
+
+.hideUI .wrap{
+margin:0;
+max-width:none;
+padding:0
+}
+
+.hideUI .wheelArea{min-height:100vh}
+
+@media(max-width:700px){
+header{flex-wrap:wrap}
+.present{margin-left:0}
+.themes,.audioGrid{grid-template-columns:1fr 1fr}
+.wheelBox{width:90vw}
+}
+
+@media(max-width:520px){
+.themes,.audioGrid{grid-template-columns:1fr}
+}
 </style>
 </head>
+
 <body>
 
 <header>
-<div class="brand">◎ AT&amp;T Spin To Win<span>PRIZE WHEEL</span></div>
+<div class="brand">
+◎ AT&amp;T Spin To Win
+<span>PRIZE WHEEL</span>
+</div>
+
 <div class="nav">
 <button id="wheelTab" class="btn active">Wheel</button>
 <button id="setupTab" class="btn">⚙ Setup</button>
 </div>
+
 <button id="present" class="btn present">⛶ Present</button>
 </header>
 
 <main class="wrap">
 
 <section id="wheelPage" class="page active">
+
 <div id="empty" class="empty">
+
 <div style="font-size:48px">🏆</div>
+
 <h1>Ready to Spin To Win</h1>
+
 <p>Add participants in Setup to load your wheel.</p>
-<button id="openSetup" class="btn primary">⚙ Open Setup</button>
+
+<button id="openSetup" class="btn primary">
+⚙ Open Setup
+</button>
+
 </div>
 
 <div id="wheelArea" class="wheelArea" hidden>
+
 <div>
+
 <div class="wheelBox">
+
 <canvas id="wheel" width="700" height="700"></canvas>
+
 <div class="pointer"></div>
+
 </div>
-<button id="spin" class="btn primary spin hidePresent">SPIN THE WHEEL</button>
-<p id="counter" class="hidePresent" style="color:white;font-weight:bold"></p>
+
+<button
+id="spin"
+class="btn primary spin hidePresent">
+SPIN THE WHEEL
+</button>
+
+<p
+id="counter"
+class="hidePresent"
+style="color:white;font-weight:bold">
+</p>
+
 </div>
+
 </div>
+
 </section>
 
 <section id="setupPage" class="page">
 
 <div class="card">
+
 <h2>🏷 Event Label</h2>
-<input id="event" class="field" placeholder="Example: Q4 Kickoff or Employee Raffle">
+
+<input
+id="event"
+class="field"
+placeholder="Example: Q4 Kickoff or Employee Raffle">
+
 </div>
 
 <div class="card">
-<h2>👥 Participants <span id="count" style="font-size:13px"></span></h2>
+
+<h2>
+👥 Participants
+<span id="count" style="font-size:13px"></span>
+</h2>
 
 <div class="row">
-<input id="name" class="field" placeholder="Participant name">
-<button id="add" class="btn primary">+ Add</button>
+
+<input
+id="name"
+class="field"
+placeholder="Participant name">
+
+<button id="add" class="btn primary">
++ Add
+</button>
+
 </div>
 
 <h3>Bulk Add</h3>
-<textarea id="bulk" class="field" placeholder="Jane Doe&#10;John Smith&#10;Rosa Garcia"></textarea>
+
+<textarea
+id="bulk"
+class="field"
+placeholder="Jane Doe&#10;John Smith&#10;Rosa Garcia"></textarea>
 
 <div class="row">
-<button id="addBulk" class="btn">Add Names</button>
-<button id="clearBulk" class="btn">Clear Box</button>
+
+<button id="addBulk" class="btn">
+Add Names
+</button>
+
+<button id="clearBulk" class="btn">
+Clear Box
+</button>
+
 </div>
 
 <h3>CSV</h3>
-<input id="csv" type="file" accept=".csv" hidden>
+
+<input
+id="csv"
+type="file"
+accept=".csv"
+hidden>
+
 <div class="row">
-<button id="import" class="btn">Import CSV</button>
-<button id="export" class="btn">Export CSV</button>
-<button id="clear" class="btn">Clear All</button>
+
+<button id="import" class="btn">
+Import CSV
+</button>
+
+<button id="export" class="btn">
+Export CSV
+</button>
+
+<button id="clear" class="btn">
+Clear All
+</button>
+
 </div>
 
 <div id="people" class="list"></div>
+
 </div>
 
 <div class="card">
+
 <h2>🎨 Customization</h2>
 
 <h3>Center Logo</h3>
-<input id="logo" type="file" accept="image/*">
 
-<h3>Logo Size: <span id="logoLabel">28%</span></h3>
-<input id="logoSize" type="range" min="10" max="60" value="28" style="width:100%">
+<input
+id="logo"
+type="file"
+accept="image/*">
+
+<h3>
+Logo Size:
+<span id="logoLabel">28%</span>
+</h3>
+
+<input
+id="logoSize"
+type="range"
+min="10"
+max="60"
+value="28"
+style="width:100%">
 
 <h3>Background</h3>
+
 <div id="themes" class="themes"></div>
 
-<h3>Spin Duration: <span id="durationLabel">7 seconds</span></h3>
-<input id="duration" type="range" min="3" max="20" value="7" style="width:100%">
+<h3>
+Spin Duration:
+<span id="durationLabel">7 seconds</span>
+</h3>
+
+<input
+id="duration"
+type="range"
+min="3"
+max="20"
+value="7"
+style="width:100%">
 
 <div class="controls">
-<label class="toggle">Remove winner after spin <input id="removeWinner" type="checkbox" checked></label>
-<label class="toggle">Show participant counter <input id="showCounter" type="checkbox" checked></label>
-<label class="toggle">Enable keyboard shortcuts <input id="hotkeys" type="checkbox" checked></label>
+
+<label class="toggle">
+Remove winner after spin
+<input id="removeWinner" type="checkbox" checked>
+</label>
+
+<label class="toggle">
+Show participant counter
+<input id="showCounter" type="checkbox" checked>
+</label>
+
+<label class="toggle">
+Enable keyboard shortcuts
+<input id="hotkeys" type="checkbox" checked>
+</label>
+
 </div>
 </div>
 
 <div class="card">
-<h2>⌨ Keyboard Controls</h2>
-<p><b>Space</b> Spin &nbsp; | &nbsp; <b>S</b> Setup &nbsp; | &nbsp; <b>W</b> Wheel &nbsp; | &nbsp; <b>F</b> Fullscreen &nbsp; | &nbsp; <b>U</b> Undo winner &nbsp; | &nbsp; <b>R</b> Restore winners</p>
-</div>
 
-<div class="card">
-<h2>🏆 Winner History</h2>
+<h2>🔊 Sound Effects</h2>
+
+<label class="toggle">
+Enable sound effects
+<input id="soundEnabled" type="checkbox" checked>
+</label>
+
+<h3>
+Master Volume:
+<span id="volumeLabel">70%</span>
+</h3>
+
+<input
+id="volume"
+type="range"
+min="0"
+max="100"
+value="70"
+style="width:100%">
+
+<p style="font-size:13px;color:#477ba7">
+The app includes built-in wheel ticks and a generated winner celebration. You can replace either sound with your own audio file.
+</p>
+
+<div class="audioGrid">
+
+<div class="audioBox">
+
+<h3>🎡 Spinning Wheel Sound</h3>
+
+<p style="font-size:13px">
+Plays while the wheel spins.
+</p>
+
+<input
+id="spinAudioFile"
+type="file"
+accept="audio/*">
+
+<span
+id="spinAudioStatus"
+class="status">
+Using built-in wheel ticks
+</span>
+
 <div class="row">
-<button id="exportWinners" class="btn">Export Winners</button>
-<button id="clearWinners" class="btn">Clear History</button>
+
+<button
+id="testSpinAudio"
+class="btn">
+▶ Test
+</button>
+
+<button
+id="clearSpinAudio"
+class="btn">
+Use Default
+</button>
+
 </div>
-<div id="history" class="list" style="padding:12px">No winners yet.</div>
+
+</div>
+
+<div class="audioBox">
+
+<h3>🎉 Winner Cheer</h3>
+
+<p style="font-size:13px">
+Plays when the winner is revealed.
+</p>
+
+<input
+id="winnerAudioFile"
+type="file"
+accept="audio/*">
+
+<span
+id="winnerAudioStatus"
+class="status">
+Using built-in crowd cheer
+</span>
+
+<div class="row">
+
+<button
+id="testWinnerAudio"
+class="btn">
+▶ Test
+</button>
+
+<button
+id="clearWinnerAudio"
+class="btn">
+Use Default
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<h2>⌨ Keyboard Controls</h2>
+
+<p>
+<b>Space</b> Spin
+&nbsp; | &nbsp;
+<b>S</b> Setup
+&nbsp; | &nbsp;
+<b>W</b> Wheel
+&nbsp; | &nbsp;
+<b>F</b> Fullscreen
+&nbsp; | &nbsp;
+<b>M</b> Mute/unmute
+&nbsp; | &nbsp;
+<b>U</b> Undo winner
+&nbsp; | &nbsp;
+<b>R</b> Restore winners
+</p>
+
+</div>
+
+<div class="card">
+
+<h2>🏆 Winner History</h2>
+
+<div class="row">
+
+<button
+id="exportWinners"
+class="btn">
+Export Winners
+</button>
+
+<button
+id="clearWinners"
+class="btn">
+Clear History
+</button>
+
+</div>
+
+<div
+id="history"
+class="list"
+style="padding:12px">
+
+No winners yet.
+
+</div>
+
 </div>
 
 </section>
+
 </main>
 
 <div id="overlay" class="overlay">
+
 <div class="winner">
+
 <h2>🏆 WINNER</h2>
-<div id="winnerName" class="winnerName"></div>
-<button id="continue" class="btn primary">Continue</button>
+
+<div
+id="winnerName"
+class="winnerName">
 </div>
+
+<button
+id="continue"
+class="btn primary">
+Continue
+</button>
+
+</div>
+
 </div>
 
 <script>
+
 const $=id=>document.getElementById(id);
-let people=JSON.parse(localStorage.getItem("stwPeople")||"[]");
-let winners=JSON.parse(localStorage.getItem("stwWinners")||"[]");
-let removed=[],rotation=0,logo=null;
-let theme=localStorage.getItem("stwTheme")||"linear-gradient(135deg,#004b87,#00a8e0)";
-const colors=["#00a8e0","#0568c9","#50cef1","#003b70","#64d1e7","#0b4f9b","#78ddf5","#1577cf"];
+
+let people=JSON.parse(
+localStorage.getItem("stwPeople")||"[]"
+);
+
+let winners=JSON.parse(
+localStorage.getItem("stwWinners")||"[]"
+);
+
+let removed=[];
+let rotation=0;
+let logo=null;
+
+let theme=
+localStorage.getItem("stwTheme")||
+"linear-gradient(135deg,#004b87,#00a8e0)";
+
+let audioContext=null;
+let spinTickTimer=null;
+let spinStopTimer=null;
+let spinCustomAudio=null;
+let winnerCustomAudio=null;
+
+const colors=[
+"#00a8e0",
+"#0568c9",
+"#50cef1",
+"#003b70",
+"#64d1e7",
+"#0b4f9b",
+"#78ddf5",
+"#1577cf"
+];
+
 const themeData=[
 ["AT&T","linear-gradient(135deg,#004b87,#00a8e0)"],
 ["Navy","linear-gradient(135deg,#003b70,#0057b8)"],
@@ -139,151 +706,1501 @@ const themeData=[
 ["Thanksgiving","linear-gradient(135deg,#8d3100,#e99a38)"],
 ["Summer","linear-gradient(135deg,#ffd85e,#ff663e)"]
 ];
+
 document.body.style.background=theme;
 
+/* SAVE */
+
 function save(){
-localStorage.setItem("stwPeople",JSON.stringify(people));
-localStorage.setItem("stwWinners",JSON.stringify(winners));
-localStorage.setItem("stwTheme",theme);
+
+localStorage.setItem(
+"stwPeople",
+JSON.stringify(people)
+);
+
+localStorage.setItem(
+"stwWinners",
+JSON.stringify(winners)
+);
+
+localStorage.setItem(
+"stwTheme",
+theme
+);
+
 }
+
+/* NAVIGATION */
 
 function nav(page){
-$("wheelPage").classList.toggle("active",page==="wheel");
-$("setupPage").classList.toggle("active",page==="setup");
-$("wheelTab").classList.toggle("active",page==="wheel");
-$("setupTab").classList.toggle("active",page==="setup");
+
+$("wheelPage")
+.classList.toggle(
+"active",
+page==="wheel"
+);
+
+$("setupPage")
+.classList.toggle(
+"active",
+page==="setup"
+);
+
+$("wheelTab")
+.classList.toggle(
+"active",
+page==="wheel"
+);
+
+$("setupTab")
+.classList.toggle(
+"active",
+page==="setup"
+);
+
 render();
+
 }
-$("wheelTab").onclick=()=>nav("wheel");
-$("setupTab").onclick=()=>nav("setup");
-$("openSetup").onclick=()=>nav("setup");
+
+$("wheelTab").onclick=
+()=>nav("wheel");
+
+$("setupTab").onclick=
+()=>nav("setup");
+
+$("openSetup").onclick=
+()=>nav("setup");
+
+/* SAFE TEXT */
 
 function safe(s){
-const d=document.createElement("div");
+
+const d=
+document.createElement("div");
+
 d.textContent=s;
+
 return d.innerHTML;
+
 }
+
+/* RENDER */
 
 function render(){
+
 save();
-$("count").textContent=`(${people.length} on wheel)`;
-$("people").innerHTML=people.length?people.map((n,i)=>`<div class="person"><span>${safe(n)}</span><button class="remove" data-i="${i}">Remove</button></div>`).join(""):`<p style="padding:15px;text-align:center">No participants yet.</p>`;
-$("empty").hidden=people.length>0;
-$("wheelArea").hidden=!people.length;
-$("counter").textContent=$("showCounter").checked?`${people.length} names remaining`:"";
-$("history").innerHTML=winners.length?winners.map((w,i)=>`<div style="padding:8px;border-bottom:1px solid #eee"><b>${i+1}. ${safe(w.name)}</b><br><small>${new Date(w.time).toLocaleString()}</small></div>`).join(""):"No winners yet.";
+
+$("count").textContent=
+`(${people.length} on wheel)`;
+
+$("people").innerHTML=
+people.length
+?
+people.map(
+(n,i)=>`
+<div class="person">
+<span>${safe(n)}</span>
+<button
+class="remove"
+data-i="${i}">
+Remove
+</button>
+</div>
+`
+).join("")
+:
+`
+<p style="padding:15px;text-align:center">
+No participants yet.
+</p>
+`;
+
+$("empty").hidden=
+people.length>0;
+
+$("wheelArea").hidden=
+!people.length;
+
+$("counter").textContent=
+$("showCounter").checked
+?
+`${people.length} names remaining`
+:
+"";
+
+$("history").innerHTML=
+winners.length
+?
+winners.map(
+(w,i)=>`
+<div style="padding:8px;border-bottom:1px solid #eee">
+<b>${i+1}. ${safe(w.name)}</b>
+<br>
+<small>
+${new Date(w.time).toLocaleString()}
+</small>
+</div>
+`
+).join("")
+:
+"No winners yet.";
+
 draw();
+
 }
+
+/* PEOPLE */
 
 function addNames(list){
-list.map(x=>x.trim()).filter(Boolean).forEach(n=>{
-if(!people.some(p=>p.toLowerCase()===n.toLowerCase()))people.push(n);
-});
-render();
+
+list
+.map(x=>x.trim())
+.filter(Boolean)
+.forEach(n=>{
+
+if(
+!people.some(
+p=>
+p.toLowerCase()===
+n.toLowerCase()
+)
+){
+
+people.push(n);
+
 }
 
-$("add").onclick=()=>{addNames([$("name").value]);$("name").value="";$("name").focus()};
-$("name").onkeydown=e=>{if(e.key==="Enter")$("add").click()};
-$("addBulk").onclick=()=>addNames($("bulk").value.split(/\r?\n/));
-$("clearBulk").onclick=()=>$("bulk").value="";
-$("clear").onclick=()=>{people=[];render()};
-$("people").onclick=e=>{if(e.target.dataset.i!==undefined){people.splice(+e.target.dataset.i,1);render()}};
+});
 
-$("import").onclick=()=>$("csv").click();
-$("csv").onchange=e=>{
-const f=e.target.files[0];if(!f)return;
-const r=new FileReader();
-r.onload=()=>addNames(String(r.result).split(/\r?\n/).map((x,i)=>{let v=x.split(",")[0].replace(/^"|"$/g,"").trim();return i===0&&v.toLowerCase()==="name"?"":v}));
-r.readAsText(f);
+render();
+
+}
+
+$("add").onclick=()=>{
+
+addNames([
+$("name").value
+]);
+
+$("name").value="";
+
+$("name").focus();
+
 };
 
-function download(name,text){
-const url=URL.createObjectURL(new Blob([text],{type:"text/csv"}));
-const a=document.createElement("a");a.href=url;a.download=name;a.click();
-setTimeout(()=>URL.revokeObjectURL(url),100);
+$("name").onkeydown=e=>{
+
+if(e.key==="Enter"){
+
+e.preventDefault();
+
+$("add").click();
+
 }
-$("export").onclick=()=>download("participants.csv","Name\n"+people.map(n=>`"${n.replaceAll('"','""')}"`).join("\n"));
-$("exportWinners").onclick=()=>download("winners.csv","Name,Time\n"+winners.map(w=>`"${w.name.replaceAll('"','""')}","${new Date(w.time).toISOString()}"`).join("\n"));
-$("clearWinners").onclick=()=>{winners=[];render()};
+
+};
+
+$("addBulk").onclick=
+()=>addNames(
+$("bulk")
+.value
+.split(/\r?\n/)
+);
+
+$("clearBulk").onclick=
+()=>$("bulk").value="";
+
+$("clear").onclick=()=>{
+
+people=[];
+
+render();
+
+};
+
+$("people").onclick=e=>{
+
+if(
+e.target.dataset.i!==
+undefined
+){
+
+people.splice(
++e.target.dataset.i,
+1
+);
+
+render();
+
+}
+
+};
+
+/* CSV IMPORT */
+
+$("import").onclick=
+()=>$("csv").click();
+
+$("csv").onchange=e=>{
+
+const f=
+e.target.files[0];
+
+if(!f)return;
+
+const r=
+new FileReader();
+
+r.onload=()=>{
+
+addNames(
+
+String(r.result)
+
+.split(/\r?\n/)
+
+.map(
+(x,i)=>{
+
+let v=
+x
+.split(",")[0]
+.replace(/^"|"$/g,"")
+.trim();
+
+return
+i===0 &&
+v.toLowerCase()==="name"
+?
+""
+:
+v;
+
+}
+)
+
+);
+
+};
+
+r.readAsText(f);
+
+};
+
+/* DOWNLOAD */
+
+function download(
+name,
+text
+){
+
+const url=
+URL.createObjectURL(
+
+new Blob(
+[text],
+{type:"text/csv"}
+)
+
+);
+
+const a=
+document.createElement("a");
+
+a.href=url;
+
+a.download=name;
+
+a.click();
+
+setTimeout(
+()=>URL.revokeObjectURL(url),
+100
+);
+
+}
+
+$("export").onclick=()=>{
+
+download(
+
+"participants.csv",
+
+"Name\n"+
+people.map(
+n=>
+`"${n.replaceAll('"','""')}"`
+).join("\n")
+
+);
+
+};
+
+$("exportWinners").onclick=()=>{
+
+download(
+
+"winners.csv",
+
+"Name,Time\n"+
+
+winners.map(
+w=>
+`"${w.name.replaceAll('"','""')}","${new Date(w.time).toISOString()}"`
+).join("\n")
+
+);
+
+};
+
+$("clearWinners").onclick=()=>{
+
+winners=[];
+
+render();
+
+};
+
+/* DRAW WHEEL */
 
 function draw(){
-const c=$("wheel"),x=c.getContext("2d"),N=people.length,C=c.width/2,R=C-12;
-x.clearRect(0,0,c.width,c.height);if(!N)return;
-for(let i=0;i<N;i++){
-const a=i*2*Math.PI/N-Math.PI/2,b=(i+1)*2*Math.PI/N-Math.PI/2;
-x.beginPath();x.moveTo(C,C);x.arc(C,C,R,a,b);x.closePath();x.fillStyle=colors[i%colors.length];x.fill();x.strokeStyle="white";x.lineWidth=3;x.stroke();
-x.save();x.translate(C,C);x.rotate((a+b)/2);x.fillStyle="white";x.font=`bold ${Math.max(13,Math.min(26,250/N))}px Arial`;x.textAlign="right";x.textBaseline="middle";x.fillText(people[i].slice(0,25),R-25,0);x.restore();
+
+const c=
+$("wheel");
+
+const x=
+c.getContext("2d");
+
+const N=
+people.length;
+
+const C=
+c.width/2;
+
+const R=
+C-12;
+
+x.clearRect(
+0,
+0,
+c.width,
+c.height
+);
+
+if(!N)return;
+
+for(
+let i=0;
+i<N;
+i++
+){
+
+const a=
+i*2*Math.PI/N-
+Math.PI/2;
+
+const b=
+(i+1)*2*Math.PI/N-
+Math.PI/2;
+
+x.beginPath();
+
+x.moveTo(C,C);
+
+x.arc(
+C,C,R,a,b
+);
+
+x.closePath();
+
+x.fillStyle=
+colors[
+i%colors.length
+];
+
+x.fill();
+
+x.strokeStyle="white";
+x.lineWidth=3;
+x.stroke();
+
+x.save();
+
+x.translate(C,C);
+
+x.rotate(
+(a+b)/2
+);
+
+x.fillStyle="white";
+
+x.font=
+`bold ${
+Math.max(
+13,
+Math.min(
+26,
+250/N
+)
+)
+}px Arial`;
+
+x.textAlign="right";
+x.textBaseline="middle";
+
+x.fillText(
+people[i].slice(0,25),
+R-25,
+0
+);
+
+x.restore();
+
 }
-x.beginPath();x.arc(C,C,R*.19,0,Math.PI*2);x.fillStyle="white";x.fill();
+
+x.beginPath();
+
+x.arc(
+C,C,R*.19,
+0,
+Math.PI*2
+);
+
+x.fillStyle="white";
+x.fill();
+
 if(logo){
-const s=R*.38*(+$("logoSize").value/28);
-x.save();x.beginPath();x.arc(C,C,R*.18,0,Math.PI*2);x.clip();x.drawImage(logo,C-s/2,C-s/2,s,s);x.restore();
-}else{
-x.fillStyle="#00a8e0";x.font="bold 50px Arial";x.textAlign="center";x.textBaseline="middle";x.fillText("◎",C,C);
+
+const s=
+R*.38*
+(
++$("logoSize").value/
+28
+);
+
+x.save();
+
+x.beginPath();
+
+x.arc(
+C,C,R*.18,
+0,
+Math.PI*2
+);
+
+x.clip();
+
+x.drawImage(
+logo,
+C-s/2,
+C-s/2,
+s,
+s
+);
+
+x.restore();
+
 }
+
+else{
+
+x.fillStyle="#00a8e0";
+x.font="bold 50px Arial";
+x.textAlign="center";
+x.textBaseline="middle";
+
+x.fillText(
+"◎",
+C,C
+);
+
 }
+
+}
+
+/* RANDOM */
 
 function random(){
-if(window.crypto?.getRandomValues){let a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]/4294967296}
-return Math.random();
+
+if(
+window.crypto &&
+window.crypto.getRandomValues
+){
+
+let a=
+new Uint32Array(1);
+
+crypto.getRandomValues(a);
+
+return
+a[0]/
+4294967296;
+
 }
+
+return Math.random();
+
+}
+
+/* AUDIO */
+
+function audioOn(){
+
+return
+$("soundEnabled").checked &&
++$("volume").value>0;
+
+}
+
+function volume(){
+
+return
++$("volume").value/
+100;
+
+}
+
+function getAudioContext(){
+
+if(!audioContext){
+
+const AudioContextClass=
+window.AudioContext ||
+window.webkitAudioContext;
+
+if(!AudioContextClass)
+return null;
+
+audioContext=
+new AudioContextClass();
+
+}
+
+if(
+audioContext.state===
+"suspended"
+){
+
+audioContext.resume();
+
+}
+
+return audioContext;
+
+}
+
+/* Simple generated tone */
+
+function tone(
+freq,
+duration,
+gain=.07,
+type="sine",
+delay=0
+){
+
+if(!audioOn())return;
+
+const c=
+getAudioContext();
+
+if(!c)return;
+
+const o=
+c.createOscillator();
+
+const g=
+c.createGain();
+
+const start=
+c.currentTime+
+delay;
+
+o.type=type;
+
+o.frequency
+.setValueAtTime(
+freq,
+start
+);
+
+g.gain
+.setValueAtTime(
+Math.max(
+.0001,
+gain*volume()
+),
+start
+);
+
+g.gain
+.exponentialRampToValueAtTime(
+.0001,
+start+duration
+);
+
+o.connect(g);
+
+g.connect(
+c.destination
+);
+
+o.start(start);
+
+o.stop(
+start+duration
+);
+
+}
+
+/* STOP SPIN SOUND */
+
+function stopSpinSound(){
+
+if(spinTickTimer){
+
+clearTimeout(
+spinTickTimer
+);
+
+spinTickTimer=null;
+
+}
+
+if(spinStopTimer){
+
+clearTimeout(
+spinStopTimer
+);
+
+spinStopTimer=null;
+
+}
+
+if(spinCustomAudio){
+
+spinCustomAudio.pause();
+
+spinCustomAudio.currentTime=0;
+
+}
+
+}
+
+/* DEFAULT TICKING WHEEL */
+
+function startDefaultSpin(
+seconds
+){
+
+stopSpinSound();
+
+if(!audioOn())return;
+
+let tickCount=0;
+
+function tick(){
+
+if(
+spinTickTimer===
+null
+)return;
+
+const frequency=
+360+
+(
+tickCount%5
+)*35;
+
+tone(
+frequency,
+.04,
+.06,
+"square"
+);
+
+tickCount++;
+
+let delay=
+80+
+tickCount*5;
+
+delay=
+Math.min(
+delay,
+260
+);
+
+spinTickTimer=
+setTimeout(
+tick,
+delay
+);
+
+}
+
+spinTickTimer=
+setTimeout(
+tick,
+25
+);
+
+spinStopTimer=
+setTimeout(
+stopSpinSound,
+seconds*1000-80
+);
+
+}
+
+/* SPIN SOUND */
+
+function playSpinSound(
+seconds
+){
+
+if(!audioOn())return;
+
+if(spinCustomAudio){
+
+stopSpinSound();
+
+spinCustomAudio.currentTime=0;
+
+spinCustomAudio.volume=
+volume();
+
+spinCustomAudio.loop=true;
+
+spinCustomAudio
+.play()
+.catch(()=>{});
+
+spinStopTimer=
+setTimeout(
+stopSpinSound,
+seconds*1000-80
+);
+
+}
+
+else{
+
+startDefaultSpin(
+seconds
+);
+
+}
+
+}
+
+/* GENERATED CHEER */
+
+function defaultCheer(){
+
+if(!audioOn())return;
+
+const c=
+getAudioContext();
+
+if(!c)return;
+
+const duration=3;
+
+const buffer=
+c.createBuffer(
+1,
+c.sampleRate*duration,
+c.sampleRate
+);
+
+const data=
+buffer.getChannelData(0);
+
+for(
+let i=0;
+i<data.length;
+i++
+){
+
+const t=
+i/c.sampleRate;
+
+const attack=
+Math.min(
+1,
+t*7
+);
+
+const decay=
+Math.max(
+0,
+1-t/duration
+);
+
+const modulation=
+.45+
+.25*
+Math.sin(
+t*40
+);
+
+data[i]=
+(
+Math.random()*2-1
+)*
+attack*
+decay*
+modulation;
+
+}
+
+const source=
+c.createBufferSource();
+
+const filter=
+c.createBiquadFilter();
+
+const gain=
+c.createGain();
+
+source.buffer=
+buffer;
+
+filter.type=
+"bandpass";
+
+filter.frequency.value=
+1200;
+
+filter.Q.value=
+.5;
+
+gain.gain.value=
+.38*
+volume();
+
+source.connect(
+filter
+);
+
+filter.connect(
+gain
+);
+
+gain.connect(
+c.destination
+);
+
+source.start();
+
+/* celebration tones */
+
+[
+523,
+659,
+784,
+1047
+]
+.forEach(
+(freq,index)=>{
+
+tone(
+freq,
+.75,
+.06,
+"triangle",
+index*.09
+);
+
+}
+);
+
+}
+
+/* WINNER SOUND */
+
+function playWinnerSound(){
+
+if(!audioOn())return;
+
+if(winnerCustomAudio){
+
+winnerCustomAudio.currentTime=0;
+
+winnerCustomAudio.volume=
+volume();
+
+winnerCustomAudio
+.play()
+.catch(()=>{});
+
+}
+
+else{
+
+defaultCheer();
+
+}
+
+}
+
+/* CUSTOM AUDIO UPLOAD */
+
+function loadCustomAudio(
+input,
+status,
+type
+){
+
+const file=
+input.files[0];
+
+if(!file)return;
+
+const url=
+URL.createObjectURL(
+file
+);
+
+const audio=
+new Audio(url);
+
+audio.preload=
+"auto";
+
+audio.oncanplay=()=>{
+
+if(type==="spin"){
+
+spinCustomAudio=
+audio;
+
+}
+
+else{
+
+winnerCustomAudio=
+audio;
+
+}
+
+status.textContent=
+`Custom: ${file.name}`;
+
+};
+
+audio.onerror=()=>{
+
+status.textContent=
+"Could not load that audio file";
+
+};
+
+}
+
+$("spinAudioFile").onchange=e=>
+
+loadCustomAudio(
+e.target,
+$("spinAudioStatus"),
+"spin"
+);
+
+$("winnerAudioFile").onchange=e=>
+
+loadCustomAudio(
+e.target,
+$("winnerAudioStatus"),
+"winner"
+);
+
+/* DEFAULT AUDIO BUTTONS */
+
+$("clearSpinAudio").onclick=()=>{
+
+stopSpinSound();
+
+spinCustomAudio=null;
+
+$("spinAudioFile").value="";
+
+$("spinAudioStatus").textContent=
+"Using built-in wheel ticks";
+
+};
+
+$("clearWinnerAudio").onclick=()=>{
+
+if(winnerCustomAudio){
+
+winnerCustomAudio.pause();
+
+winnerCustomAudio.currentTime=0;
+
+}
+
+winnerCustomAudio=null;
+
+$("winnerAudioFile").value="";
+
+$("winnerAudioStatus").textContent=
+"Using built-in crowd cheer";
+
+};
+
+/* TEST AUDIO */
+
+$("testSpinAudio").onclick=()=>{
+
+playSpinSound(3);
+
+};
+
+$("testWinnerAudio").onclick=()=>{
+
+playWinnerSound();
+
+};
+
+/* VOLUME */
+
+$("volume").oninput=e=>{
+
+$("volumeLabel").textContent=
+e.target.value+
+"%";
+
+if(spinCustomAudio){
+
+spinCustomAudio.volume=
+volume();
+
+}
+
+if(winnerCustomAudio){
+
+winnerCustomAudio.volume=
+volume();
+
+}
+
+};
+
+/* SPIN */
 
 function spin(){
-if(!people.length||$("wheel").dataset.spin)return;
-const index=Math.floor(random()*people.length),slice=360/people.length,center=index*slice+slice/2,target=90-center;
-rotation+=360*6+((target-(rotation%360)+360)%360);
-const seconds=+$("duration").value,w=$("wheel");
-w.dataset.spin=1;w.style.transitionDuration=seconds+"s";w.style.transform=`rotate(${rotation}deg)`;
-setTimeout(()=>{
+
+if(
+!people.length ||
+$("wheel").dataset.spin
+)
+return;
+
+const index=
+Math.floor(
+random()*
+people.length
+);
+
+const slice=
+360/
+people.length;
+
+const center=
+index*slice+
+slice/2;
+
+const target=
+90-center;
+
+rotation+=
+360*6+
+(
+(
+target-
+(rotation%360)+
+360
+)%360
+);
+
+const seconds=
++$("duration").value;
+
+const w=
+$("wheel");
+
+w.dataset.spin=1;
+
+w.style.transitionDuration=
+seconds+"s";
+
+w.style.transform=
+`rotate(${rotation}deg)`;
+
+/* START WHEEL AUDIO */
+
+playSpinSound(
+seconds
+);
+
+setTimeout(
+()=>{
+
 delete w.dataset.spin;
-const name=people[index];
-winners.unshift({name,time:Date.now()});
-removed.push(name);
-$("winnerName").textContent=name;
-$("overlay").classList.add("show");
-if($("removeWinner").checked)people.splice(index,1);
-render();
-},seconds*1000);
+
+stopSpinSound();
+
+const winner=
+people[index];
+
+winners.unshift(
+{
+name:winner,
+time:Date.now()
 }
-$("spin").onclick=spin;
-$("continue").onclick=()=>$("overlay").classList.remove("show");
+);
+
+removed.push(
+winner
+);
+
+$("winnerName").textContent=
+winner;
+
+$("overlay")
+.classList.add(
+"show"
+);
+
+/* PLAY CHEER */
+
+playWinnerSound();
+
+if(
+$("removeWinner").checked
+){
+
+people.splice(
+index,
+1
+);
+
+}
+
+render();
+
+},
+seconds*1000
+);
+
+}
+
+$("spin").onclick=
+spin;
+
+$("continue").onclick=()=>{
+
+$("overlay")
+.classList.remove(
+"show"
+);
+
+};
+
+/* LOGO */
 
 $("logo").onchange=e=>{
-const f=e.target.files[0];if(!f)return;
-const r=new FileReader();
-r.onload=()=>{logo=new Image();logo.onload=draw;logo.src=r.result};
-r.readAsDataURL(f);
-};
-$("logoSize").oninput=e=>{$("logoLabel").textContent=e.target.value+"%";draw()};
-$("duration").oninput=e=>$("durationLabel").textContent=e.target.value+" seconds";
-$("showCounter").onchange=render;
 
-themeData.forEach(([name,value])=>{
-const b=document.createElement("button");b.className="theme"+(value===theme?" sel":"");b.textContent=name;b.style.background=value;
-b.onclick=()=>{theme=value;document.body.style.background=theme;document.querySelectorAll(".theme").forEach(x=>x.classList.remove("sel"));b.classList.add("sel");save()};
-$("themes").appendChild(b);
-});
+const f=
+e.target.files[0];
+
+if(!f)return;
+
+const r=
+new FileReader();
+
+r.onload=()=>{
+
+logo=
+new Image();
+
+logo.onload=
+draw;
+
+logo.src=
+r.result;
+
+};
+
+r.readAsDataURL(
+f
+);
+
+};
+
+$("logoSize").oninput=e=>{
+
+$("logoLabel").textContent=
+e.target.value+
+"%";
+
+draw();
+
+};
+
+/* DURATION */
+
+$("duration").oninput=e=>{
+
+$("durationLabel").textContent=
+e.target.value+
+" seconds";
+
+};
+
+$("showCounter").onchange=
+render;
+
+/* THEMES */
+
+themeData.forEach(
+([name,value])=>{
+
+const b=
+document.createElement(
+"button"
+);
+
+b.className=
+"theme"+
+(
+value===theme
+?
+" sel"
+:
+""
+);
+
+b.textContent=
+name;
+
+b.style.background=
+value;
+
+b.onclick=()=>{
+
+theme=value;
+
+document.body.style.background=
+theme;
+
+document
+.querySelectorAll(
+".theme"
+)
+.forEach(
+x=>
+x.classList.remove(
+"sel"
+)
+);
+
+b.classList.add(
+"sel"
+);
+
+save();
+
+};
+
+$("themes")
+.appendChild(
+b
+);
+
+}
+);
+
+/* PRESENT */
 
 async function present(){
-nav("wheel");document.body.classList.add("hideUI");
-try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen()}catch(e){}
-}
-$("present").onclick=present;
-document.addEventListener("fullscreenchange",()=>{if(!document.fullscreenElement)document.body.classList.remove("hideUI")});
 
-document.addEventListener("keydown",e=>{
-if(!$("hotkeys").checked||["INPUT","TEXTAREA"].includes(document.activeElement.tagName))return;
-const k=e.key.toLowerCase();
-if(e.code==="Space"){e.preventDefault();spin()}
-if(k==="s")nav("setup");
-if(k==="w")nav("wheel");
-if(k==="f")present();
-if(k==="u"&&winners.length){const w=winners.shift();if(!people.includes(w.name))people.push(w.name);render()}
-if(k==="r"&&removed.length){removed.forEach(n=>{if(!people.includes(n))people.push(n)});removed=[];render()}
-if(k==="escape"){$("overlay").classList.remove("show");document.body.classList.remove("hideUI")}
-});
+nav("wheel");
+
+document.body
+.classList.add(
+"hideUI"
+);
+
+try{
+
+if(
+!document.fullscreenElement
+){
+
+await document
+.documentElement
+.requestFullscreen();
+
+}
+
+}
+catch(e){}
+
+}
+
+$("present").onclick=
+present;
+
+document.addEventListener(
+"fullscreenchange",
+()=>{
+
+if(
+!document.fullscreenElement
+){
+
+document.body
+.classList.remove(
+"hideUI"
+);
+
+}
+
+}
+);
+
+/* HOTKEYS */
+
+document.addEventListener(
+"keydown",
+e=>{
+
+if(
+!$("hotkeys").checked ||
+[
+"INPUT",
+"TEXTAREA"
+].includes(
+document.activeElement.tagName
+)
+)
+return;
+
+const k=
+e.key.toLowerCase();
+
+if(
+e.code===
+"Space"
+){
+
+e.preventDefault();
+
+spin();
+
+}
+
+if(k==="s")
+nav("setup");
+
+if(k==="w")
+nav("wheel");
+
+if(k==="f")
+present();
+
+if(k==="m"){
+
+$("soundEnabled").checked=
+!$("soundEnabled").checked;
+
+if(
+!$("soundEnabled").checked
+){
+
+stopSpinSound();
+
+}
+
+}
+
+if(
+k==="u" &&
+winners.length
+){
+
+const w=
+winners.shift();
+
+if(
+!people.includes(
+w.name
+)
+){
+
+people.push(
+w.name
+);
+
+}
 
 render();
+
+}
+
+if(
+k==="r" &&
+removed.length
+){
+
+removed.forEach(
+n=>{
+
+if(
+!people.includes(n)
+){
+
+people.push(n);
+
+}
+
+}
+);
+
+removed=[];
+
+render();
+
+}
+
+if(
+k==="escape"
+){
+
+$("overlay")
+.classList.remove(
+"show"
+);
+
+document.body
+.classList.remove(
+"hideUI"
+);
+
+stopSpinSound();
+
+}
+
+}
+);
+
+/* START */
+
+render();
+
 </script>
+
 </body>
 </html>
